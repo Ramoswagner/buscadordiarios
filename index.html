@@ -3,1159 +3,750 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FilantroMonitor – Busca em Diários e Portais Oficiais</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>FilantroMonitor</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 :root {
-  --ink: #0d1b2a;
-  --ink2: #1a2e45;
-  --ink3: #243d58;
-  --paper: #f5f0e8;
-  --paper2: #ede8db;
-  --paper3: #e2dcd0;
-  --gold: #b8860b;
-  --gold2: #d4a017;
-  --gold3: #f0c040;
-  --red: #8b1a1a;
-  --green: #1a5c2e;
-  --green2: #2d8a4a;
-  --border: rgba(13,27,42,0.15);
-  --shadow: 0 4px 24px rgba(13,27,42,0.12);
-  --radius: 10px;
+  --bg:      #f8f8f6;
+  --surface: #ffffff;
+  --border:  #e2e2de;
+  --border2: #c8c8c2;
+  --text:    #1a1a18;
+  --muted:   #6b6b65;
+  --faint:   #9a9a94;
+  --accent:  #1d4ed8;
+  --accent-bg: #eff3ff;
+  --green:   #166534;
+  --green-bg:#dcfce7;
+  --red:     #991b1b;
+  --red-bg:  #fee2e2;
+  --amber:   #92400e;
+  --amber-bg:#fef3c7;
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'IBM Plex Sans', sans-serif;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-
 body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
   font-size: 14px;
+  line-height: 1.5;
   min-height: 100vh;
 }
 
-/* Grain overlay */
-body::before {
-  content:'';
-  position:fixed; inset:0; pointer-events:none; z-index:0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity: 0.4;
-}
+/* ── layout ── */
+.page { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
 
-.wrap { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px 80px; }
-
-/* ── HEADER ── */
-header {
-  border-bottom: 2px solid var(--ink);
-  padding: 28px 0 18px;
-  margin-bottom: 36px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
+/* ── header ── */
+.hd {
+  display: flex; align-items: baseline;
+  gap: 16px; margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
 }
-
-.masthead { display:flex; align-items:center; gap:16px; }
-
-.masthead-seal {
-  width:54px; height:54px;
-  background: var(--ink);
-  border-radius: 50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:24px;
-  flex-shrink:0;
-  box-shadow: 0 2px 12px rgba(13,27,42,0.3);
+.hd-name {
+  font-family: var(--mono);
+  font-size: 18px; font-weight: 600;
+  letter-spacing: -0.3px;
 }
+.hd-sub { font-size: 12px; color: var(--muted); }
 
-.masthead-text {}
-.masthead-name {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 900;
-  color: var(--ink);
-  line-height: 1;
-  letter-spacing: -0.5px;
+/* ── search ── */
+.search-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
 }
-.masthead-sub {
-  font-size: 11px;
-  color: var(--ink3);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-top: 3px;
-}
-
-.header-meta {
-  text-align:right;
-  font-size:11px;
-  color: var(--ink3);
-  letter-spacing: 0.3px;
-}
-.header-date {
-  font-family: 'Playfair Display', serif;
-  font-size:13px;
-  font-weight:700;
-  color: var(--ink);
-  margin-bottom: 2px;
-}
-
-/* ── SEARCH BOX ── */
-.search-section {
-  background: var(--ink);
-  border-radius: var(--radius);
-  padding: 32px 36px;
-  margin-bottom: 32px;
-  box-shadow: var(--shadow);
-}
-
-.search-eyebrow {
-  font-size:10px;
-  letter-spacing:2px;
-  text-transform:uppercase;
-  color: var(--gold2);
-  margin-bottom: 10px;
-}
-
-.search-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 20px;
-  line-height: 1.3;
-}
-
-.search-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.search-input-wrap {
+.search-row { display: flex; gap: 8px; }
+.search-input {
   flex: 1;
-  min-width: 260px;
-  position: relative;
-}
-
-.search-input-wrap::before {
-  content: '🔍';
-  position: absolute;
-  left: 14px; top:50%; transform: translateY(-50%);
-  font-size:16px; pointer-events:none;
-}
-
-#searchInput {
-  width:100%; height:50px;
-  padding: 0 16px 0 44px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
-  color: #fff;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  outline:none;
-  transition: border-color 0.2s, background 0.2s;
-}
-#searchInput::placeholder { color: rgba(255,255,255,0.35); }
-#searchInput:focus {
-  border-color: var(--gold2);
-  background: rgba(255,255,255,0.14);
-}
-
-#searchBtn {
-  height: 50px;
-  padding: 0 32px;
-  background: var(--gold);
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  font-family: 'DM Sans', sans-serif;
+  height: 40px;
+  padding: 0 12px;
+  font-family: var(--sans);
   font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  letter-spacing: 0.3px;
-  transition: background 0.2s, transform 0.1s;
-  display:flex; align-items:center; gap:8px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s;
 }
-#searchBtn:hover { background: var(--gold2); }
-#searchBtn:active { transform: scale(0.98); }
-#searchBtn:disabled { background: #555; cursor:not-allowed; }
-
-.filter-row {
-  margin-top: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filter-chip {
-  padding: 5px 14px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.6);
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s;
-  user-select: none;
-  letter-spacing: 0.3px;
-}
-.filter-chip:hover { border-color: var(--gold2); color: var(--gold3); }
-.filter-chip.active {
-  background: var(--gold);
-  border-color: var(--gold);
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--faint); }
+.btn-primary {
+  height: 40px; padding: 0 18px;
+  background: var(--text);
   color: #fff;
+  border: none; border-radius: 6px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity .15s;
+}
+.btn-primary:hover { opacity: .85; }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+/* date range row */
+.search-opts {
+  display: flex; gap: 12px; margin-top: 12px;
+  align-items: center; flex-wrap: wrap;
+}
+.search-opts label { font-size: 12px; color: var(--muted); }
+.search-opts input[type=date] {
+  height: 32px; padding: 0 8px;
+  font-family: var(--mono); font-size: 12px;
+  border: 1px solid var(--border2); border-radius: 5px;
+  background: var(--bg); color: var(--text);
+  outline: none;
+}
+.search-opts input[type=date]:focus { border-color: var(--accent); }
+.hint { font-size: 11px; color: var(--faint); margin-left: auto; }
+
+/* ── progress ── */
+.progress { margin-bottom: 20px; display: none; }
+.progress.show { display: block; }
+.prog-bar-wrap {
+  height: 3px; background: var(--border);
+  border-radius: 2px; overflow: hidden; margin-bottom: 8px;
+}
+.prog-bar { height: 100%; background: var(--accent); transition: width .3s; width: 0; }
+.prog-label { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+/* ── summary bar ── */
+.summary {
+  display: flex; gap: 20px; margin-bottom: 16px;
+  font-size: 12px; color: var(--muted);
+  font-family: var(--mono);
+  display: none;
+}
+.summary.show { display: flex; }
+.sum-item strong { color: var(--text); }
+
+/* ── section title ── */
+.section-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .8px; text-transform: uppercase;
+  color: var(--faint);
+  margin: 24px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
 }
 
-/* ── STATS BAR ── */
-.stats-bar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-.stat-pill {
-  display:flex; align-items:center; gap:6px;
-  background: var(--paper2);
+/* ── result card ── */
+.result-card {
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 12px;
-  color: var(--ink2);
-}
-.stat-pill strong { color: var(--ink); }
-.stat-dot { width:7px;height:7px;border-radius:50%; flex-shrink:0; }
-.dot-ok    { background: var(--green2); }
-.dot-warn  { background: var(--gold); }
-.dot-load  { background: #888; animation: blink 1s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-/* ── RESULTS GRID ── */
-.section-header {
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--ink);
-}
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.section-count {
-  font-size: 12px;
-  color: var(--ink3);
-}
-
-/* Category groups */
-.category-group { margin-bottom: 36px; }
-
-.category-label {
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--gold);
-  font-weight: 600;
-  margin-bottom: 12px;
-  display:flex; align-items:center; gap:8px;
-}
-.category-label::after {
-  content:'';
-  flex:1; height:1px;
-  background: linear-gradient(to right, var(--border), transparent);
-}
-
-.portals-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
-}
-
-/* Portal card */
-.portal-card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 8px;
+  margin-bottom: 10px;
   overflow: hidden;
-  transition: box-shadow 0.2s, transform 0.2s;
-  position: relative;
+  transition: border-color .15s;
 }
-.portal-card:hover {
-  box-shadow: 0 8px 32px rgba(13,27,42,0.12);
-  transform: translateY(-2px);
+.result-card:hover { border-color: var(--border2); }
+
+.card-head {
+  display: flex; align-items: center;
+  gap: 10px; padding: 12px 16px;
+  cursor: pointer; user-select: none;
+}
+.card-src {
+  font-size: 12px; font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.card-src span {
+  font-weight: 400; color: var(--muted); margin-left: 6px;
+}
+.card-badge {
+  font-size: 10px; font-family: var(--mono);
+  padding: 2px 8px; border-radius: 20px;
+  font-weight: 500; white-space: nowrap;
+}
+.badge-found  { background: var(--green-bg); color: var(--green); }
+.badge-none   { background: var(--bg); color: var(--faint); border: 1px solid var(--border); }
+.badge-error  { background: var(--red-bg); color: var(--red); }
+.badge-loading{ background: var(--amber-bg); color: var(--amber); }
+.badge-link   { background: var(--accent-bg); color: var(--accent); }
+
+.card-toggle {
+  font-size: 11px; color: var(--faint);
+  transition: transform .2s;
+}
+.card-toggle.open { transform: rotate(180deg); }
+
+.card-body {
+  border-top: 1px solid var(--border);
+  padding: 0;
+  max-height: 0; overflow: hidden;
+  transition: max-height .25s ease;
+}
+.card-body.open { max-height: 9000px; }
+.card-body-inner { padding: 14px 16px; }
+
+/* hit item */
+.hit {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.hit:last-child { border-bottom: none; padding-bottom: 0; }
+.hit-excerpt {
+  font-size: 13px; line-height: 1.65;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.hit-excerpt mark {
+  background: #fef08a; border-radius: 2px;
+  padding: 0 2px; color: inherit;
+}
+.hit-meta {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  font-size: 11px; color: var(--muted); font-family: var(--mono);
+  align-items: center;
+}
+.hit-date { }
+.hit-territory { }
+.hit-link {
+  color: var(--accent); text-decoration: none; margin-left: auto;
+  font-size: 11px; font-family: var(--mono);
+}
+.hit-link:hover { text-decoration: underline; }
+
+/* no-results msg */
+.no-results {
+  font-size: 13px; color: var(--muted);
+  padding: 6px 0;
 }
 
-.card-stripe {
-  height: 4px;
-  background: var(--ink);
+/* link-only card content */
+.link-only {
+  font-size: 13px; color: var(--muted); margin-bottom: 10px;
 }
-.stripe-federal  { background: #1a3a6b; }
-.stripe-mg       { background: #006400; }
-.stripe-sp       { background: #8b0000; }
-.stripe-rj       { background: #4a0082; }
-.stripe-rs       { background: #8b4513; }
-.stripe-pr       { background: #006b6b; }
-.stripe-tcu      { background: #8b6914; }
-.stripe-tcmg     { background: #2d6b2d; }
-.stripe-tj       { background: #4a3580; }
-.stripe-cnes     { background: #006080; }
-.stripe-transp   { background: #b84000; }
-
-.card-body { padding: 16px 18px; }
-
-.card-top {
-  display:flex; align-items:flex-start; justify-content:space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+.open-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--accent);
+  text-decoration: none; font-weight: 500;
 }
+.open-link:hover { text-decoration: underline; }
 
-.card-icon {
-  width:36px; height:36px;
-  border-radius:8px;
-  background: var(--paper2);
-  display:flex; align-items:center; justify-content:center;
-  font-size:17px;
-  flex-shrink:0;
+/* empty state */
+.empty {
+  text-align: center; padding: 60px 0;
+  color: var(--faint);
 }
+.empty-icon { font-size: 32px; margin-bottom: 12px; }
+.empty-title { font-size: 15px; color: var(--muted); font-weight: 500; }
+.empty-sub { font-size: 13px; margin-top: 4px; }
 
-.card-info { flex:1; min-width:0; }
-.card-name {
-  font-weight:600;
-  font-size:13px;
-  color: var(--ink);
-  line-height:1.3;
-  margin-bottom: 2px;
-}
-.card-scope {
-  font-size:11px;
-  color: var(--ink3);
+/* loading skeleton */
+.skel { background: var(--border); border-radius: 4px; animation: sk 1.2s infinite ease-in-out; }
+.skel-line { height: 12px; margin-bottom: 8px; }
+@keyframes sk { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+/* tag */
+.tag {
+  display: inline-block; font-size: 10px;
+  font-family: var(--mono); padding: 1px 6px;
+  border-radius: 3px; border: 1px solid var(--border);
+  color: var(--muted); margin-left: 4px;
 }
 
-.card-status {
-  display:flex; align-items:center; gap:5px;
-  font-size:10px;
-  padding:3px 9px;
-  border-radius:20px;
-  flex-shrink:0;
-  white-space:nowrap;
-}
-.status-ready   { background:#e8f5e9; color: var(--green); border:1px solid #b2dfdb; }
-.status-loading { background:#fff8e1; color:#856000; border:1px solid #ffe082; }
-.status-found   { background:#e3f2fd; color:#1a4a8b; border:1px solid #90caf9; }
-.status-none    { background:#fce4ec; color: var(--red); border:1px solid #f48fb1; }
-.status-error   { background:#f3e5f5; color:#6a1b9a; border:1px solid #ce93d8; }
-
-.card-desc {
-  font-size:12px;
-  color: var(--ink3);
-  line-height:1.5;
-  margin-bottom: 12px;
-}
-
-/* Results inside card */
-.card-results { margin-bottom: 12px; }
-
-.result-item {
-  background: var(--paper);
-  border: 1px solid var(--border);
-  border-radius:6px;
-  padding:10px 12px;
-  margin-bottom:8px;
-  transition: border-color 0.15s;
-}
-.result-item:hover { border-color: var(--gold); }
-.result-item:last-child { margin-bottom:0; }
-
-.result-title {
-  font-size:12px;
-  font-weight:600;
-  color: var(--ink);
-  margin-bottom:4px;
-  line-height:1.4;
-}
-
-.result-meta {
-  display:flex; flex-wrap:wrap; gap:8px;
-  margin-bottom:6px;
-}
-.result-tag {
-  font-size:10px;
-  background: var(--paper2);
-  color: var(--ink3);
-  padding:2px 7px;
-  border-radius:3px;
-}
-
-.result-link {
-  display:inline-flex; align-items:center; gap:4px;
-  font-size:11px;
-  color: var(--gold);
-  font-weight:600;
-  text-decoration:none;
-  transition: color 0.15s;
-}
-.result-link:hover { color: var(--gold2); text-decoration:underline; }
-
-.card-actions {
-  display:flex; gap:8px; flex-wrap:wrap;
-}
-
-.btn-search-portal {
-  flex:1;
-  padding:8px 14px;
-  background: var(--ink);
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  font-family:'DM Sans',sans-serif;
-  font-size:12px;
-  font-weight:600;
-  cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:6px;
-  transition: background 0.15s;
-  text-decoration:none;
-}
-.btn-search-portal:hover { background: var(--ink3); }
-
-.btn-open-site {
-  padding:8px 12px;
-  background: transparent;
-  color: var(--ink2);
-  border:1px solid var(--border);
-  border-radius:6px;
-  font-family:'DM Sans',sans-serif;
-  font-size:12px;
-  cursor:pointer;
-  transition: all 0.15s;
-  text-decoration:none;
-  display:flex; align-items:center; gap:4px;
-}
-.btn-open-site:hover { background: var(--paper2); border-color: var(--ink2); }
-
-/* Skeleton loading */
-.skeleton {
-  background: linear-gradient(90deg, var(--paper2) 25%, var(--paper3) 50%, var(--paper2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius:4px;
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-.sk-line { height:12px; margin-bottom:6px; }
-.sk-line.short { width:60%; }
-.sk-line.medium { width:80%; }
-
-/* Empty state */
-.empty-state {
-  grid-column: 1/-1;
-  text-align:center;
-  padding:60px 20px;
-  color: var(--ink3);
-}
-.empty-icon { font-size:48px; margin-bottom:16px; }
-.empty-title {
-  font-family:'Playfair Display',serif;
-  font-size:20px;
-  color: var(--ink);
-  margin-bottom:8px;
-}
-.empty-sub { font-size:13px; line-height:1.6; }
-
-/* Progress bar */
-.progress-wrap {
-  background: var(--paper2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  margin-bottom: 24px;
-  display:none;
-}
-.progress-wrap.visible { display:block; }
-.progress-title {
-  font-size:13px; font-weight:600; color: var(--ink);
-  margin-bottom:12px;
-  display:flex; align-items:center; gap:8px;
-}
-.progress-bar-outer {
-  height:6px; background: var(--paper3); border-radius:3px; overflow:hidden;
-  margin-bottom: 10px;
-}
-.progress-bar-inner {
-  height:100%; background: var(--gold);
-  border-radius:3px;
-  transition: width 0.4s ease;
-  width: 0%;
-}
-.progress-list {
-  display:flex; flex-wrap:wrap; gap:6px;
-}
-.progress-item {
-  font-size:11px; padding:3px 10px;
-  border-radius:20px;
-  border:1px solid var(--border);
-  color: var(--ink3);
-  background: #fff;
-}
-.progress-item.done { background:#e8f5e9; color: var(--green); border-color:#b2dfdb; }
-.progress-item.running { background:#fff8e1; color:#856000; border-color:#ffe082; animation: blink 0.8s infinite; }
-.progress-item.fail { background:#fce4ec; color: var(--red); border-color:#f48fb1; }
-
-/* Toast */
-.toast {
-  position:fixed; bottom:24px; right:24px; z-index:9999;
-  background: var(--ink);
-  color:#fff;
-  padding:12px 20px;
-  border-radius:8px;
-  font-size:13px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-  transform: translateY(80px);
-  opacity:0;
-  transition: all 0.3s;
-  max-width:320px;
-}
-.toast.show { transform:translateY(0); opacity:1; }
-
-/* Footer */
-footer {
-  border-top: 2px solid var(--ink);
+/* footer */
+.footer {
   margin-top: 60px;
-  padding: 20px 0;
-  display:flex; align-items:center; justify-content:space-between;
-  flex-wrap:wrap; gap:12px;
-}
-.footer-text { font-size:11px; color: var(--ink3); }
-.footer-portals { font-size:11px; color: var(--ink3); }
-
-@media(max-width:640px){
-  .portals-grid { grid-template-columns:1fr; }
-  header { flex-direction:column; align-items:flex-start; }
-  .search-section { padding:20px; }
-  #searchBtn { width:100%; justify-content:center; }
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--faint);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
 }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="page">
 
-  <!-- HEADER -->
-  <header>
-    <div class="masthead">
-      <div class="masthead-seal">⚖️</div>
-      <div class="masthead-text">
-        <div class="masthead-name">FilantroMonitor</div>
-        <div class="masthead-sub">Busca em Diários &amp; Portais Oficiais do Brasil</div>
-      </div>
-    </div>
-    <div class="header-meta">
-      <div class="header-date" id="currentDate">—</div>
-      <div id="portalCount">0 portais ativos</div>
-    </div>
-  </header>
+  <!-- header -->
+  <div class="hd">
+    <div class="hd-name">FilantroMonitor</div>
+    <div class="hd-sub">busca em diários e portais oficiais do Brasil</div>
+  </div>
 
-  <!-- SEARCH -->
-  <div class="search-section">
-    <div class="search-eyebrow">Busca Unificada</div>
-    <div class="search-title">Digite o nome da instituição, CNPJ ou termo para monitorar</div>
+  <!-- search -->
+  <div class="search-box">
     <div class="search-row">
-      <div class="search-input-wrap">
-        <input type="text" id="searchInput" placeholder="Ex: Fundação Benjamin Guimarães, Hospital da Baleia..." autocomplete="off">
-      </div>
-      <button id="searchBtn" onclick="startSearch()">
-        <span>🔎</span> Buscar em Todos os Portais
-      </button>
+      <input class="search-input" id="q" type="text"
+        placeholder="Nome da instituição, CNPJ ou termo…"
+        autocomplete="off" spellcheck="false">
+      <button class="btn-primary" id="btnSearch" onclick="run()">Buscar</button>
     </div>
-    <div class="filter-row" id="filterRow">
-      <span class="filter-chip active" data-cat="all" onclick="toggleFilter(this)">Todos</span>
-      <span class="filter-chip active" data-cat="federal" onclick="toggleFilter(this)">Federal</span>
-      <span class="filter-chip active" data-cat="mg" onclick="toggleFilter(this)">Minas Gerais</span>
-      <span class="filter-chip active" data-cat="sp" onclick="toggleFilter(this)">São Paulo</span>
-      <span class="filter-chip active" data-cat="rj" onclick="toggleFilter(this)">Rio de Janeiro</span>
-      <span class="filter-chip active" data-cat="rs" onclick="toggleFilter(this)">Rio Grande do Sul</span>
-      <span class="filter-chip active" data-cat="pr" onclick="toggleFilter(this)">Paraná</span>
-      <span class="filter-chip active" data-cat="tcu" onclick="toggleFilter(this)">Tribunais de Contas</span>
-      <span class="filter-chip active" data-cat="tj" onclick="toggleFilter(this)">Tribunais de Justiça</span>
-      <span class="filter-chip active" data-cat="saude" onclick="toggleFilter(this)">Saúde / CNES</span>
-      <span class="filter-chip active" data-cat="transp" onclick="toggleFilter(this)">Transparência</span>
+    <div class="search-opts">
+      <label>De</label>
+      <input type="date" id="dateFrom">
+      <label>Até</label>
+      <input type="date" id="dateTo">
+      <span class="hint">Querido Diário · DOU · TCU · CEBAS · TJMG · Transparência</span>
     </div>
   </div>
 
-  <!-- PROGRESS -->
-  <div class="progress-wrap" id="progressWrap">
-    <div class="progress-title">⏳ Consultando portais... <span id="progressText">0 / 0</span></div>
-    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
-    <div class="progress-list" id="progressList"></div>
+  <!-- progress -->
+  <div class="progress" id="prog">
+    <div class="prog-bar-wrap"><div class="prog-bar" id="progBar"></div></div>
+    <div class="prog-label" id="progLabel">Consultando…</div>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-bar" id="statsBar" style="display:none">
-    <div class="stat-pill"><span class="stat-dot dot-ok"></span> <strong id="statFound">0</strong> com resultados</div>
-    <div class="stat-pill"><span class="stat-dot dot-warn"></span> <strong id="statNone">0</strong> sem resultado</div>
-    <div class="stat-pill"><span class="stat-dot" style="background:#888"></span> <strong id="statError">0</strong> com erro</div>
-    <div class="stat-pill">🔍 Busca: "<strong id="statTerm">—</strong>"</div>
+  <!-- summary -->
+  <div class="summary" id="summary">
+    <div class="sum-item"><strong id="sFound">0</strong> com resultados</div>
+    <div class="sum-item"><strong id="sNone">0</strong> sem resultado</div>
+    <div class="sum-item"><strong id="sErr">0</strong> erro</div>
+    <div class="sum-item" id="sTermWrap">termo: <strong id="sTerm">—</strong></div>
   </div>
 
-  <!-- RESULTS -->
-  <div id="resultsArea"></div>
+  <!-- results -->
+  <div id="results">
+    <div class="empty">
+      <div class="empty-icon">◎</div>
+      <div class="empty-title">Pronto para buscar</div>
+      <div class="empty-sub">Digite um nome acima e clique em Buscar</div>
+    </div>
+  </div>
 
-  <footer>
-    <div class="footer-text">FilantroMonitor © 2025 — Monitoramento de publicações em portais oficiais</div>
-    <div class="footer-portals" id="footerPortals"></div>
-  </footer>
+  <div class="footer">
+    <span>FilantroMonitor — fontes abertas e oficiais</span>
+    <span>Querido Diário (OKBR) · DOU · TCU · CEBAS · TJMG Editais · Portal Transparência</span>
+  </div>
+
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
 <script>
-// ═══════════════════════════════════════════════════════
-// PORTAL REGISTRY — todos os portais configurados
-// ═══════════════════════════════════════════════════════
-const PORTALS = [
+// ──────────────────────────────────────────────────────────────────
+// DATA: portal definitions
+// Each portal has a `fetch` function returning { hits, url, error? }
+// hits: [ { excerpt, date, territory, url } ]
+// ──────────────────────────────────────────────────────────────────
 
-  // ── FEDERAL ──────────────────────────────────────────
-  {
-    id: 'dou', cat: 'federal', stripe: 'stripe-federal',
-    icon: '📜', name: 'Diário Oficial da União',
-    scope: 'Federal · Imprensa Nacional',
-    desc: 'Principal diário oficial do governo federal. Publica atos, portarias, contratos, convênios e extratos de entidades federais.',
-    searchUrl: q => `https://www.in.gov.br/consulta/-/busca-oficial?q=${encodeURIComponent('"'+q+'"')}&s=pub_dt&o=desc`,
-    homeUrl: 'https://www.in.gov.br',
-    proxyTry: true,
-    parseHints: ['resultados', 'publicação', 'diário'],
-  },
-  {
-    id: 'cnpq', cat: 'federal', stripe: 'stripe-federal',
-    icon: '🔬', name: 'CNPq – Bolsas e Projetos',
-    scope: 'Federal · Ciência e Tecnologia',
-    desc: 'Consulta de projetos, bolsas e convênios com entidades de pesquisa e filantropia.',
-    searchUrl: q => `http://plsql2.cnpq.br/divulg/RESULTADO_PQ_102003.prc_comp_download?v_param=&v_busca=${encodeURIComponent(q)}&v_ano=&v_modal=`,
-    homeUrl: 'https://www.cnpq.br',
-    proxyTry: false,
-  },
-  {
-    id: 'siconv', cat: 'federal', stripe: 'stripe-federal',
-    icon: '🤝', name: 'Transferegov / SICONV',
-    scope: 'Federal · Convênios e Transferências',
-    desc: 'Sistema federal de convênios, repasses e transferências voluntárias para entidades filantrópicas e do terceiro setor.',
-    searchUrl: q => `https://transferegov.sistema.gov.br/convenios/lista?uf=&municipio=&proponente=${encodeURIComponent(q)}&situacao=&modalidade=&ano=`,
-    homeUrl: 'https://transferegov.sistema.gov.br',
-    proxyTry: false,
-  },
-  {
-    id: 'cebas', cat: 'federal', stripe: 'stripe-federal',
-    icon: '🏛️', name: 'CEBAS – Certificação Filantrópica',
-    scope: 'Federal · Assistência Social / MDS',
-    desc: 'Certificado de Entidade Beneficente de Assistência Social. Consulta de entidades certificadas, renovações e processos.',
-    searchUrl: q => `https://aplicacoes.mds.gov.br/sagi/cebas/pesquisar.php?consulta=${encodeURIComponent(q)}`,
-    homeUrl: 'https://www.gov.br/mds/pt-br/acoes-e-programas/assistencia-social/cebas',
-    proxyTry: false,
-  },
-  {
-    id: 'cnes', cat: 'saude', stripe: 'stripe-cnes',
-    icon: '🏥', name: 'CNES – Cadastro Nacional de Saúde',
-    scope: 'Federal · Ministério da Saúde',
-    desc: 'Cadastro Nacional de Estabelecimentos de Saúde. Consulta de hospitais, clínicas e entidades de saúde filantrópicas.',
-    searchUrl: q => `https://cnes.datasus.gov.br/pages/estabelecimentos/consulta.jsp?search=${encodeURIComponent(q)}`,
-    homeUrl: 'https://cnes.datasus.gov.br',
-    proxyTry: false,
-  },
-  {
-    id: 'transparencia', cat: 'transp', stripe: 'stripe-transp',
-    icon: '📊', name: 'Portal da Transparência Federal',
-    scope: 'Federal · CGU',
-    desc: 'Gastos, contratos, convênios e repasses do governo federal. Inclui entidades do terceiro setor beneficiadas.',
-    searchUrl: q => `https://portaldatransparencia.gov.br/convenios?termo=${encodeURIComponent(q)}&ordenarPor=valor&direcao=desc`,
-    homeUrl: 'https://portaldatransparencia.gov.br',
-    proxyTry: false,
-  },
-  {
-    id: 'tcu', cat: 'tcu', stripe: 'stripe-tcu',
-    icon: '⚖️', name: 'TCU – Tribunal de Contas da União',
-    scope: 'Federal · Controle Externo',
-    desc: 'Acórdãos, decisões, processos de fiscalização e julgamentos que envolvam entidades filantrópicas e convênios federais.',
-    searchUrl: q => `https://pesquisa.apps.tcu.gov.br/#/pesquisa/acordao-completo?q=${encodeURIComponent(q)}&s=DTRELEVANCIA&sd=DESC`,
-    homeUrl: 'https://portal.tcu.gov.br',
-    proxyTry: false,
-  },
-
-  // ── MINAS GERAIS ─────────────────────────────────────
-  {
-    id: 'jmg', cat: 'mg', stripe: 'stripe-mg',
-    icon: '📰', name: 'Jornal Minas Gerais',
-    scope: 'Estado · Minas Gerais',
-    desc: 'Diário Oficial do Estado de Minas Gerais. Publicações estaduais, portarias da SEDS, contratos com entidades.',
-    searchUrl: q => `https://www.jornalminasgerais.mg.gov.br/?s=${encodeURIComponent(q)}`,
-    homeUrl: 'https://www.jornalminasgerais.mg.gov.br',
-    proxyTry: true,
-    parseHints: ['publicação', 'jornal', 'minas'],
-  },
-  {
-    id: 'dombh', cat: 'mg', stripe: 'stripe-mg',
-    icon: '🏙️', name: 'Diário Oficial BH',
-    scope: 'Município · Belo Horizonte',
-    desc: 'Diário Oficial do Município de Belo Horizonte. Atos municipais, convênios e publicações da PBH.',
-    searchUrl: q => `https://dom-web.pbh.gov.br/apex/f?p=2200:1:::NO:1:P1_PESQUISA:${encodeURIComponent(q)}`,
-    homeUrl: 'https://dom-web.pbh.gov.br',
-    proxyTry: true,
-    parseHints: ['diário', 'belo horizonte', 'publicação'],
-  },
-  {
-    id: 'tcemg', cat: 'tcu', stripe: 'stripe-tcmg',
-    icon: '🏛️', name: 'TCE-MG – Tribunal de Contas MG',
-    scope: 'Estado · Minas Gerais',
-    desc: 'Acórdãos, denúncias e processos de controle externo de entidades filantrópicas que recebem recursos do Estado de MG.',
-    searchUrl: q => `https://www2.tce.mg.gov.br/convenios-pesquisa?searchQuery=${encodeURIComponent(q)}`,
-    homeUrl: 'https://www.tce.mg.gov.br',
-    proxyTry: false,
-  },
-  {
-    id: 'tjmg', cat: 'tj', stripe: 'stripe-tj',
-    icon: '⚖️', name: 'TJMG – Tribunal de Justiça MG',
-    scope: 'Estado · Minas Gerais',
-    desc: 'Jurisprudência, acórdãos e decisões do TJMG envolvendo entidades filantrópicas, hospitais e fundações.',
-    searchUrl: q => `https://www5.tjmg.jus.br/jurisprudencia/pesquisaPalavrasEspelhoAcordao.do?&numeroProcesso=&listaProcesso=&palavras=${encodeURIComponent(q)}&exatidao=true&pesquisar=Pesquisar`,
-    homeUrl: 'https://www.tjmg.jus.br',
-    proxyTry: false,
-  },
-  {
-    id: 'transp-mg', cat: 'transp', stripe: 'stripe-mg',
-    icon: '📂', name: 'Transparência MG',
-    scope: 'Estado · Minas Gerais',
-    desc: 'Portal de Transparência do Governo do Estado de Minas Gerais. Repasses, contratos e convênios estaduais.',
-    searchUrl: q => `http://www.transparencia.mg.gov.br/convenios/conveniados?busca=${encodeURIComponent(q)}`,
-    homeUrl: 'http://www.transparencia.mg.gov.br',
-    proxyTry: false,
-  },
-
-  // ── SÃO PAULO ─────────────────────────────────────────
-  {
-    id: 'doesp', cat: 'sp', stripe: 'stripe-sp',
-    icon: '📋', name: 'DOE-SP – Diário Oficial SP',
-    scope: 'Estado · São Paulo',
-    desc: 'Diário Oficial do Estado de São Paulo. Publicações de entidades filantrópicas com atuação no estado.',
-    searchUrl: q => `https://www.imprensaoficial.com.br/DO/GatewayPage.aspx?link=/2013/executivo%20secao%20i/janeiro/5/pag_0001_GES4P3O45HDP4e4SD1OIHFKH4EU.pdf&q=${encodeURIComponent(q)}`,
-    homeUrl: 'https://www.imprensaoficial.com.br',
-    proxyTry: false,
-  },
-  {
-    id: 'tcesp', cat: 'tcu', stripe: 'stripe-sp',
-    icon: '🏛️', name: 'TCE-SP – Tribunal de Contas SP',
-    scope: 'Estado · São Paulo',
-    desc: 'Consulta de processos, convênios e decisões do Tribunal de Contas do Estado de São Paulo.',
-    searchUrl: q => `https://www.tce.sp.gov.br/audesp/detalhe.php?tipo=entidade&busca=${encodeURIComponent(q)}`,
-    homeUrl: 'https://www.tce.sp.gov.br',
-    proxyTry: false,
-  },
-  {
-    id: 'tjsp', cat: 'tj', stripe: 'stripe-sp',
-    icon: '⚖️', name: 'TJSP – Tribunal de Justiça SP',
-    scope: 'Estado · São Paulo',
-    desc: 'Jurisprudência e processos do TJSP. Busca por razão social de entidades filantrópicas.',
-    searchUrl: q => `https://esaj.tjsp.jus.br/cjsg/resultadoCompleta.do?dados.buscaInteiroTeor=${encodeURIComponent(q)}&dados.pesquisarComSinonimos=S`,
-    homeUrl: 'https://www.tjsp.jus.br',
-    proxyTry: false,
-  },
-
-  // ── RIO DE JANEIRO ────────────────────────────────────
-  {
-    id: 'doerj', cat: 'rj', stripe: 'stripe-rj',
-    icon: '📋', name: 'DOERJ – Diário Oficial RJ',
-    scope: 'Estado · Rio de Janeiro',
-    desc: 'Diário Oficial do Estado do Rio de Janeiro. Publicações de entidades beneficentes e convênios estaduais.',
-    searchUrl: q => `http://www.ioerj.com.br/portal/modules/conteudoonline/lerConteudo.php?edicao=&busca=${encodeURIComponent(q)}`,
-    homeUrl: 'http://www.ioerj.com.br',
-    proxyTry: false,
-  },
-  {
-    id: 'tjrj', cat: 'tj', stripe: 'stripe-rj',
-    icon: '⚖️', name: 'TJRJ – Tribunal de Justiça RJ',
-    scope: 'Estado · Rio de Janeiro',
-    desc: 'Consulta de jurisprudência e processos no TJRJ envolvendo entidades filantrópicas.',
-    searchUrl: q => `https://www4.tjrj.jus.br/EJURIS/InicioConsJuris.aspx?PageID=matriz&q=${encodeURIComponent(q)}`,
-    homeUrl: 'https://www.tjrj.jus.br',
-    proxyTry: false,
-  },
-
-  // ── RIO GRANDE DO SUL ─────────────────────────────────
-  {
-    id: 'doers', cat: 'rs', stripe: 'stripe-rs',
-    icon: '📋', name: 'DOE-RS – Diário Oficial RS',
-    scope: 'Estado · Rio Grande do Sul',
-    desc: 'Diário Oficial do Estado do Rio Grande do Sul. Publicações de entidades beneficentes gaúchas.',
-    searchUrl: q => `https://www.ioergs.rs.gov.br/api/pub/search?q=${encodeURIComponent(q)}&sort=datapublicacao%3Adesc`,
-    homeUrl: 'https://www.ioergs.rs.gov.br',
-    proxyTry: false,
-  },
-  {
-    id: 'tjrs', cat: 'tj', stripe: 'stripe-rs',
-    icon: '⚖️', name: 'TJRS – Tribunal de Justiça RS',
-    scope: 'Estado · Rio Grande do Sul',
-    desc: 'Jurisprudência e processos do TJRS. Busca por entidades do terceiro setor.',
-    searchUrl: q => `https://www.tjrs.jus.br/buscas/jurisprudencia/exibe_html.php?q=${encodeURIComponent(q)}&proxystylesheet=tjrs_index&client=tjrs_index&filter=0&getfields=*&aba=juris`,
-    homeUrl: 'https://www.tjrs.jus.br',
-    proxyTry: false,
-  },
-
-  // ── PARANÁ ───────────────────────────────────────────
-  {
-    id: 'doespr', cat: 'pr', stripe: 'stripe-pr',
-    icon: '📋', name: 'DOES-PR – Diário Oficial PR',
-    scope: 'Estado · Paraná',
-    desc: 'Diário Oficial do Estado do Paraná. Publicações de entidades filantrópicas paranaenses.',
-    searchUrl: q => `https://www.iopr.pr.gov.br/buscadiario/BuscaAvancada?NumDiarioOf=&DataPublicacaoInicio=&DataPublicacaoFim=&Texto=${encodeURIComponent(q)}`,
-    homeUrl: 'https://www.iopr.pr.gov.br',
-    proxyTry: false,
-  },
-  {
-    id: 'tjpr', cat: 'tj', stripe: 'stripe-pr',
-    icon: '⚖️', name: 'TJPR – Tribunal de Justiça PR',
-    scope: 'Estado · Paraná',
-    desc: 'Jurisprudência e processos do Tribunal de Justiça do Paraná.',
-    searchUrl: q => `https://portal.tjpr.jus.br/jurisprudencia/j/12000000000004838/Pesquisa-de-jurisprud%C3%AAncia#resultado_ancora?q=${encodeURIComponent(q)}`,
-    homeUrl: 'https://www.tjpr.jus.br',
-    proxyTry: false,
-  },
-
-];
-
-// ── Category labels
-const CAT_LABELS = {
-  federal: { label: '🏛️ Âmbito Federal', order: 1 },
-  mg:      { label: '🌿 Minas Gerais', order: 2 },
-  sp:      { label: '🏙️ São Paulo', order: 3 },
-  rj:      { label: '🌊 Rio de Janeiro', order: 4 },
-  rs:      { label: '⛰️ Rio Grande do Sul', order: 5 },
-  pr:      { label: '🌲 Paraná', order: 6 },
-  tcu:     { label: '⚖️ Tribunais de Contas', order: 7 },
-  tj:      { label: '🔨 Tribunais de Justiça', order: 8 },
-  saude:   { label: '🏥 Saúde e CNES', order: 9 },
-  transp:  { label: '📊 Portais de Transparência', order: 10 },
+// territory IDs for Querido Diário (IBGE codes for key MG cities)
+const QD_TERRITORIES = {
+  'Belo Horizonte·MG':  '3106200',
+  'Contagem·MG':        '3118601',
+  'Uberlândia·MG':      '3170206',
+  'Betim·MG':           '3106705',
+  'Juiz de Fora·MG':    '3136702',
+  'São Paulo·SP':       '3550308',
+  'Rio de Janeiro·RJ':  '3304557',
+  'Curitiba·PR':        '4106902',
+  'Porto Alegre·RS':    '4314902',
+  'Manaus·AM':          '1302603',
+  'Fortaleza·CE':       '2304400',
+  'Salvador·BA':        '2927408',
+  'Recife·PE':          '2611606',
 };
 
-// ── State
-let activeFilters = new Set(['all','federal','mg','sp','rj','rs','pr','tcu','tj','saude','transp']);
-let lastQuery = '';
-let searchResults = {};
+// Single QD search across all territories (no territory filter = national)
+async function fetchQueridoDiario(q, since, until) {
+  const params = new URLSearchParams({
+    querystring: q,
+    excerpt_size: 400,
+    number_of_excerpts: 3,
+    size: 20,
+    sort_by: 'relevance',
+  });
+  if (since) params.set('published_since', since);
+  if (until) params.set('published_until', until);
 
-// ── Init
+  const url = `https://queridodiario.ok.org.br/api/gazettes?${params}`;
+
+  try {
+    const r = await timedFetch(url, 12000);
+    const data = await r.json();
+    const hits = (data.gazettes || []).flatMap(g =>
+      (g.highlight_texts || ['']).slice(0, 2).map(excerpt => ({
+        excerpt: excerpt || `Menção encontrada no diário de ${g.territory_name || '?'}`,
+        date: g.date || '',
+        territory: `${g.territory_name || '?'} · ${g.state_code || ''}`,
+        url: `https://queridodiario.ok.org.br/diario/${g.territory_id}/${g.date}`,
+        pdf: g.url || '',
+        source: 'Querido Diário',
+      }))
+    );
+    return { hits, url };
+  } catch(e) {
+    return { hits: [], url, error: e.message };
+  }
+}
+
+// DOU — Diário Oficial da União (link only — their API requires auth)
+function fetchDOU(q, since, until) {
+  const url = `https://www.in.gov.br/consulta/-/busca-oficial?q=${encodeURIComponent('"'+q+'"')}&s=pub_dt&o=desc`;
+  return Promise.resolve({
+    hits: [],
+    url,
+    linkOnly: true,
+    linkLabel: 'Abrir busca no DOU →',
+    desc: 'O DOU não expõe API pública de busca. Clique para abrir a pesquisa já com seu termo no portal oficial da Imprensa Nacional.',
+  });
+}
+
+// Jornal Minas Gerais (link only)
+function fetchJMG(q) {
+  const url = `https://www.jornalminasgerais.mg.gov.br/?s=${encodeURIComponent(q)}`;
+  return Promise.resolve({
+    hits: [], url, linkOnly: true,
+    linkLabel: 'Abrir busca no JMG →',
+    desc: 'Diário Oficial do Estado de MG. Clique para buscar seu termo diretamente no portal.',
+  });
+}
+
+// DOM-BH (link only)
+function fetchDOMBH(q) {
+  const url = `https://dom-web.pbh.gov.br/apex/f?p=2200:1:::NO:1:P1_PESQUISA:${encodeURIComponent(q)}`;
+  return Promise.resolve({
+    hits: [], url, linkOnly: true,
+    linkLabel: 'Abrir busca no DOM-BH →',
+    desc: 'Diário Oficial do Município de Belo Horizonte. Clique para buscar seu termo no portal da PBH.',
+  });
+}
+
+// TJMG Editais Prestação Pecuniária (link — page lists real editais)
+function fetchTJMG(q) {
+  const url = `https://www.tjmg.jus.br/portal-tjmg/processos/prestacao-pecuniaria/editais-e-andamentos.htm`;
+  return Promise.resolve({
+    hits: [], url, linkOnly: true,
+    linkLabel: 'Ver editais de Prestação Pecuniária →',
+    desc: 'O TJMG publica editais semanais para cadastro de entidades filantrópicas receberem verbas de penas pecuniárias. Esta página lista todos os editais abertos por comarca.',
+  });
+}
+
+// Portal Transparência Federal — convênios (link only, CORS blocked)
+function fetchTransparencia(q) {
+  const url = `https://portaldatransparencia.gov.br/convenios?termo=${encodeURIComponent(q)}&ordenarPor=valor&direcao=desc`;
+  return Promise.resolve({
+    hits: [], url, linkOnly: true,
+    linkLabel: 'Ver convênios no Portal da Transparência →',
+    desc: 'CGU — repasses, convênios e transferências federais para entidades do terceiro setor.',
+  });
+}
+
+// TCU — acórdãos (link only)
+function fetchTCU(q) {
+  const url = `https://pesquisa.apps.tcu.gov.br/#/pesquisa/acordao-completo?q=${encodeURIComponent(q)}&s=DTRELEVANCIA&sd=DESC`;
+  return Promise.resolve({
+    hits: [], url, linkOnly: true,
+    linkLabel: 'Pesquisar acórdãos no TCU →',
+    desc: 'Tribunal de Contas da União — acórdãos, decisões e processos de fiscalização envolvendo convênios e entidades filantrópicas.',
+  });
+}
+
+// CEBAS — certificação filantrópica (link only)
+function fetchCEBAS(q) {
+  const url = `https://aplicacoes.mds.gov.br/sagi/cebas/pesquisar.php?consulta=${encodeURIComponent(q)}`;
+  return Promise.resolve({
+    hits: [], url, linkOnly: true,
+    linkLabel: 'Consultar CEBAS →',
+    desc: 'Certificado de Entidade Beneficente de Assistência Social (MDS). Verifique se a entidade possui certificação filantrópica ativa.',
+  });
+}
+
+// CNES — estabelecimentos de saúde (link only)
+function fetchCNES(q) {
+  const url = `https://cnes.datasus.gov.br/pages/estabelecimentos/consulta.jsp?search=${encodeURIComponent(q)}`;
+  return Promise.resolve({
+    hits: [], url, linkOnly: true,
+    linkLabel: 'Consultar CNES →',
+    desc: 'Cadastro Nacional de Estabelecimentos de Saúde. Verifique registro, natureza jurídica e vínculos de hospitais e entidades de saúde.',
+  });
+}
+
+// Transferegov — convênios (link only)
+function fetchTransferegov(q) {
+  const url = `https://transferegov.sistema.gov.br/convenios/lista?proponente=${encodeURIComponent(q)}`;
+  return Promise.resolve({
+    hits: [], url, linkOnly: true,
+    linkLabel: 'Buscar em Transferegov →',
+    desc: 'Sistema federal de convênios e repasses voluntários. Verifique acordos firmados entre a entidade e órgãos do governo federal.',
+  });
+}
+
+// ── portal list
+const PORTALS = [
+  {
+    id: 'qd',
+    label: 'Querido Diário',
+    tag: 'API pública',
+    group: 'Com busca automática',
+    fetch: (q, since, until) => fetchQueridoDiario(q, since, until),
+  },
+  {
+    id: 'dou',
+    label: 'Diário Oficial da União',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q, since) => fetchDOU(q, since),
+  },
+  {
+    id: 'jmg',
+    label: 'Jornal Minas Gerais (DOE-MG)',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q) => fetchJMG(q),
+  },
+  {
+    id: 'dombh',
+    label: 'Diário Oficial BH',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q) => fetchDOMBH(q),
+  },
+  {
+    id: 'tjmg',
+    label: 'TJMG · Editais de Prestação Pecuniária',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q) => fetchTJMG(q),
+  },
+  {
+    id: 'tcu',
+    label: 'TCU · Tribunal de Contas da União',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q) => fetchTCU(q),
+  },
+  {
+    id: 'transp',
+    label: 'Portal da Transparência Federal',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q) => fetchTransparencia(q),
+  },
+  {
+    id: 'cebas',
+    label: 'CEBAS · Certificação Filantrópica',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q) => fetchCEBAS(q),
+  },
+  {
+    id: 'cnes',
+    label: 'CNES · Cadastro de Saúde',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q) => fetchCNES(q),
+  },
+  {
+    id: 'transferegov',
+    label: 'Transferegov · Convênios Federais',
+    tag: 'link direto',
+    group: 'Links diretos',
+    fetch: (q) => fetchTransferegov(q),
+  },
+];
+
+// ── helpers ──
+function timedFetch(url, ms) {
+  return Promise.race([
+    fetch(url),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms)),
+  ]);
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function ago(days) {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function highlightQ(text, q) {
+  if (!text || !q) return esc(text);
+  const terms = q.trim().split(/\s+/).filter(t => t.length > 2);
+  let out = esc(text);
+  terms.forEach(t => {
+    const re = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    out = out.replace(re, '<mark>$1</mark>');
+  });
+  return out;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ── init date defaults ──
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('portalCount').textContent = PORTALS.length + ' portais cadastrados';
-  document.getElementById('footerPortals').textContent = PORTALS.length + ' portais · DOU · JMG · DOM-BH · TCU · TCE · TJ e mais';
-  renderInitialCards();
-
-  document.getElementById('searchInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') startSearch();
+  document.getElementById('dateFrom').value = ago(30);
+  document.getElementById('dateTo').value = today();
+  document.getElementById('q').addEventListener('keydown', e => {
+    if (e.key === 'Enter') run();
   });
 });
 
-// ── Render initial (empty) cards
-function renderInitialCards() {
-  const area = document.getElementById('resultsArea');
-  area.innerHTML = buildEmptyState();
-}
+// ── main ──
+let state = { found: 0, none: 0, err: 0, done: 0 };
 
-function buildEmptyState() {
-  return `<div class="empty-state">
-    <div class="empty-icon">🔍</div>
-    <div class="empty-title">Pronto para monitorar</div>
-    <div class="empty-sub">Digite o nome de uma instituição, CNPJ ou termo acima e clique em<br><strong>Buscar em Todos os Portais</strong>.</div>
-  </div>`;
-}
+async function run() {
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
 
-// ── Filter chips
-function toggleFilter(el) {
-  const cat = el.dataset.cat;
-  if (cat === 'all') {
-    const allActive = [...document.querySelectorAll('.filter-chip')].filter(c=>c.dataset.cat!=='all').every(c=>c.classList.contains('active'));
-    if (allActive) {
-      document.querySelectorAll('.filter-chip').forEach(c => { c.classList.remove('active'); activeFilters.clear(); });
-    } else {
-      document.querySelectorAll('.filter-chip').forEach(c => { c.classList.add('active'); });
-      activeFilters = new Set(['all','federal','mg','sp','rj','rs','pr','tcu','tj','saude','transp']);
-    }
-  } else {
-    el.classList.toggle('active');
-    if (activeFilters.has(cat)) activeFilters.delete(cat);
-    else activeFilters.add(cat);
-    const allActive = [...document.querySelectorAll('.filter-chip')].filter(c=>c.dataset.cat!=='all').every(c=>c.classList.contains('active'));
-    document.querySelector('[data-cat="all"]').classList.toggle('active', allActive);
-  }
-}
+  const since = document.getElementById('dateFrom').value;
+  const until = document.getElementById('dateTo').value;
 
-// ── Main search
-async function startSearch() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) { showToast('⚠️ Digite um termo para buscar.'); return; }
+  // reset
+  state = { found: 0, none: 0, err: 0, done: 0 };
+  document.getElementById('btnSearch').disabled = true;
+  document.getElementById('btnSearch').textContent = 'Buscando…';
+  document.getElementById('prog').classList.add('show');
+  document.getElementById('progBar').style.width = '0%';
+  document.getElementById('progLabel').textContent = `0 / ${PORTALS.length} portais`;
+  document.getElementById('summary').classList.remove('show');
+  document.getElementById('sTerm').textContent = q;
+  renderSkeleton();
 
-  lastQuery = q;
-  searchResults = {};
+  const total = PORTALS.length;
 
-  const portalsToSearch = PORTALS.filter(p => activeFilters.has(p.cat) || activeFilters.has('all'));
-
-  document.getElementById('searchBtn').disabled = true;
-  document.getElementById('searchBtn').innerHTML = '<span>⏳</span> Buscando...';
-
-  // Show progress
-  showProgress(portalsToSearch, q);
-  document.getElementById('statsBar').style.display = 'flex';
-  document.getElementById('statTerm').textContent = q;
-
-  // Render skeleton cards
-  renderSkeletonCards(portalsToSearch);
-
-  let done = 0, found = 0, none = 0, err = 0;
-
-  // Run all in parallel with individual updates
-  const promises = portalsToSearch.map(async (portal) => {
-    updateProgressItem(portal.id, 'running');
+  await Promise.all(PORTALS.map(async (portal) => {
     try {
-      const result = await fetchPortal(portal, q);
-      searchResults[portal.id] = result;
-      updatePortalCard(portal, result, q);
-      updateProgressItem(portal.id, result.status === 'found' ? 'done' : result.status === 'error' ? 'fail' : 'done');
+      const result = await portal.fetch(q, since, until);
+      portal._result = result;
     } catch(e) {
-      searchResults[portal.id] = { status: 'error', items: [] };
-      updatePortalCard(portal, { status: 'error', items: [] }, q);
-      updateProgressItem(portal.id, 'fail');
+      portal._result = { hits: [], url: '', error: e.message };
     }
-    done++;
-    if (searchResults[portal.id]?.status === 'found') found++;
-    else if (searchResults[portal.id]?.status === 'error') err++;
-    else none++;
-    const pct = Math.round((done / portalsToSearch.length) * 100);
-    document.getElementById('progressBar').style.width = pct + '%';
-    document.getElementById('progressText').textContent = `${done} / ${portalsToSearch.length}`;
-    document.getElementById('statFound').textContent = found;
-    document.getElementById('statNone').textContent = none;
-    document.getElementById('statError').textContent = err;
-  });
+    state.done++;
 
-  await Promise.all(promises);
+    const r = portal._result;
+    if (r.error) state.err++;
+    else if (r.linkOnly) { /* link-only doesn't count as found/none */ }
+    else if (r.hits && r.hits.length > 0) state.found++;
+    else state.none++;
 
-  // Finalize
-  document.getElementById('progressWrap').classList.remove('visible');
-  document.getElementById('searchBtn').disabled = false;
-  document.getElementById('searchBtn').innerHTML = '<span>🔎</span> Buscar em Todos os Portais';
-  showToast(`✅ Busca concluída! ${found} portal(is) com resultados.`);
+    const pct = Math.round((state.done / total) * 100);
+    document.getElementById('progBar').style.width = pct + '%';
+    document.getElementById('progLabel').textContent = `${state.done} / ${total} portais`;
+
+    // update this card live
+    renderCard(portal, q);
+  }));
+
+  // finalize
+  document.getElementById('btnSearch').disabled = false;
+  document.getElementById('btnSearch').textContent = 'Buscar';
+  document.getElementById('prog').classList.remove('show');
+  document.getElementById('summary').classList.add('show');
+  document.getElementById('sFound').textContent = state.found;
+  document.getElementById('sNone').textContent = state.none;
+  document.getElementById('sErr').textContent = state.err;
+  renderAll(q);
 }
 
-// ── Fetch a portal (tries proxy, falls back to link)
-async function fetchPortal(portal, q) {
-  const url = portal.searchUrl(q);
+// ── rendering ──
+function renderSkeleton() {
+  const container = document.getElementById('results');
+  container.innerHTML = '';
 
-  if (portal.proxyTry) {
-    // Try CORS proxy
-    const proxies = [
-      `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-      `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    ];
-    for (const proxy of proxies) {
-      try {
-        const res = await Promise.race([
-          fetch(proxy),
-          new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 8000))
-        ]);
-        if (res.ok) {
-          const data = await res.json();
-          const html = data.contents || data.body || '';
-          if (html && html.length > 200) {
-            const found = checkHtmlForResults(html, q, portal);
-            return {
-              status: found.length > 0 ? 'found' : 'none',
-              items: found,
-              url,
-              via: 'auto',
-            };
-          }
-        }
-      } catch(_) {}
-    }
-  }
-
-  // Fallback: just return link
-  return { status: 'link', items: [], url, via: 'link' };
-}
-
-// ── Parse HTML for results (best-effort)
-function checkHtmlForResults(html, q, portal) {
-  const results = [];
-  const lower = html.toLowerCase();
-  const qLower = q.toLowerCase();
-  const terms = qLower.split(/\s+/).filter(t => t.length > 3);
-
-  const hasMatch = terms.every(t => lower.includes(t));
-  if (!hasMatch) return [];
-
-  // Try to extract titles/links
-  const titleRe = /<(?:h[1-6]|a)[^>]*>([^<]{10,200})<\/(?:h[1-6]|a)>/gi;
-  const linkRe = /href=["']([^"']+)["'][^>]*>([^<]{5,150})<\/a>/gi;
-
-  let m;
-  const seen = new Set();
-  while ((m = linkRe.exec(html)) !== null && results.length < 5) {
-    const [, href, text] = m;
-    const cleanText = text.replace(/\s+/g, ' ').trim();
-    const cleanHref = href.startsWith('http') ? href : (new URL(href, portal.homeUrl)).href;
-    if (terms.some(t => cleanText.toLowerCase().includes(t)) && !seen.has(cleanHref) && cleanText.length > 10) {
-      seen.add(cleanHref);
-      results.push({
-        title: cleanText,
-        link: cleanHref,
-        date: extractDate(html, href) || 'Data não identificada',
-        organ: portal.name,
-      });
-    }
-  }
-
-  if (results.length === 0 && hasMatch) {
-    results.push({
-      title: `Possível menção a "${q}" encontrada`,
-      link: portal.searchUrl(q),
-      date: new Date().toLocaleDateString('pt-BR'),
-      organ: portal.name,
-    });
-  }
-
-  return results;
-}
-
-function extractDate(html, near) {
-  const re = /(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})/g;
-  const m = re.exec(html);
-  if (!m) return null;
-  return m[1];
-}
-
-// ── Render skeleton cards
-function renderSkeletonCards(portals) {
-  const area = document.getElementById('resultsArea');
-  area.innerHTML = '';
-
-  // Group by cat
+  // group portals
   const groups = {};
-  portals.forEach(p => { if (!groups[p.cat]) groups[p.cat] = []; groups[p.cat].push(p); });
+  PORTALS.forEach(p => {
+    const g = p.group || 'Outros';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(p);
+  });
 
-  const sorted = Object.keys(groups).sort((a,b) => (CAT_LABELS[a]?.order||99) - (CAT_LABELS[b]?.order||99));
+  Object.entries(groups).forEach(([gname, portals]) => {
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = gname;
+    container.appendChild(label);
 
-  sorted.forEach(cat => {
-    const group = document.createElement('div');
-    group.className = 'category-group';
-    group.id = 'group-' + cat;
-    group.innerHTML = `<div class="category-label">${CAT_LABELS[cat]?.label || cat}</div><div class="portals-grid" id="grid-${cat}"></div>`;
-    area.appendChild(group);
-
-    const grid = document.getElementById('grid-' + cat);
-    groups[cat].forEach(portal => {
+    portals.forEach(portal => {
       const card = document.createElement('div');
-      card.className = 'portal-card';
-      card.id = 'card-' + portal.id;
+      card.className = 'result-card';
+      card.id = `card-${portal.id}`;
       card.innerHTML = `
-        <div class="card-stripe ${portal.stripe}"></div>
-        <div class="card-body">
-          <div class="card-top">
-            <div class="card-icon">${portal.icon}</div>
-            <div class="card-info">
-              <div class="card-name">${portal.name}</div>
-              <div class="card-scope">${portal.scope}</div>
-            </div>
-            <div class="card-status status-loading">⏳ Buscando</div>
-          </div>
-          <div class="skeleton sk-line medium"></div>
-          <div class="skeleton sk-line short" style="margin-top:6px"></div>
+        <div class="card-head">
+          <div class="card-src">${esc(portal.label)} <span class="tag">${esc(portal.tag)}</span></div>
+          <div class="card-badge badge-loading">carregando</div>
         </div>`;
-      grid.appendChild(card);
+      container.appendChild(card);
     });
   });
 }
 
-// ── Update a single portal card after result
-function updatePortalCard(portal, result, q) {
-  const card = document.getElementById('card-' + portal.id);
-  if (!card) return;
+function renderAll(q) {
+  PORTALS.forEach(p => renderCard(p, q));
+}
 
-  const url = result.url || portal.searchUrl(q);
+function renderCard(portal, q) {
+  const el = document.getElementById(`card-${portal.id}`);
+  if (!el) return;
+  const r = portal._result;
+  if (!r) return;
 
-  let statusHtml = '';
-  if (result.status === 'found') statusHtml = `<div class="card-status status-found">✅ ${result.items.length} resultado(s)</div>`;
-  else if (result.status === 'none')  statusHtml = `<div class="card-status status-none">❌ Sem resultado</div>`;
-  else if (result.status === 'error') statusHtml = `<div class="card-status status-error">⚠️ Erro</div>`;
-  else                                statusHtml = `<div class="card-status status-ready">🔗 Link direto</div>`;
+  let badge, bodyHtml;
 
-  let resultsHtml = '';
-  if (result.status === 'found' && result.items.length > 0) {
-    resultsHtml = '<div class="card-results">';
-    result.items.slice(0,4).forEach(item => {
-      resultsHtml += `
-        <div class="result-item">
-          <div class="result-title">${escHtml(item.title)}</div>
-          <div class="result-meta">
-            <span class="result-tag">📅 ${escHtml(item.date)}</span>
-            <span class="result-tag">📌 ${escHtml(item.organ)}</span>
-          </div>
-          <a class="result-link" href="${escHtml(item.link)}" target="_blank" rel="noopener">🔗 Acessar publicação →</a>
-        </div>`;
-    });
-    resultsHtml += '</div>';
-  } else if (result.status === 'none') {
-    resultsHtml = `<div class="card-desc" style="color:#888;font-style:italic;margin-bottom:10px">Nenhuma publicação encontrada para "<strong>${escHtml(q)}</strong>" neste portal.</div>`;
-  } else if (result.status === 'link' || result.status === 'error') {
-    resultsHtml = `<div class="card-desc" style="margin-bottom:10px">${escHtml(portal.desc)}</div>`;
+  if (r.error) {
+    badge = `<div class="card-badge badge-error">erro</div>`;
+    bodyHtml = `<div class="card-body-inner"><div class="no-results">Erro ao consultar: ${esc(r.error)}.<br>
+      <a class="open-link" href="${esc(r.url)}" target="_blank" rel="noopener">Abrir portal manualmente →</a></div></div>`;
+
+  } else if (r.linkOnly) {
+    badge = `<div class="card-badge badge-link">link direto</div>`;
+    bodyHtml = `<div class="card-body-inner">
+      <div class="link-only">${esc(r.desc || '')}</div>
+      <a class="open-link" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.linkLabel || 'Abrir portal →')}</a>
+    </div>`;
+
+  } else if (!r.hits || r.hits.length === 0) {
+    badge = `<div class="card-badge badge-none">sem resultado</div>`;
+    bodyHtml = `<div class="card-body-inner">
+      <div class="no-results">Nenhuma publicação encontrada para este termo no período selecionado.</div>
+    </div>`;
+
+  } else {
+    badge = `<div class="card-badge badge-found">${r.hits.length} resultado${r.hits.length>1?'s':''}</div>`;
+    const hitsHtml = r.hits.map(hit => `
+      <div class="hit">
+        <div class="hit-excerpt">${highlightQ(hit.excerpt, q)}</div>
+        <div class="hit-meta">
+          ${hit.date ? `<span class="hit-date">${fmtDate(hit.date)}</span>` : ''}
+          ${hit.territory ? `<span class="hit-territory">${esc(hit.territory)}</span>` : ''}
+          ${hit.url ? `<a class="hit-link" href="${esc(hit.url)}" target="_blank" rel="noopener">ver diário →</a>` : ''}
+        </div>
+        ${hit.pdf ? `<div style="margin-top:6px"><a class="open-link" style="font-size:11px" href="${esc(hit.pdf)}" target="_blank" rel="noopener">baixar PDF →</a></div>` : ''}
+      </div>`).join('');
+    bodyHtml = `<div class="card-body-inner">${hitsHtml}</div>`;
   }
 
-  const via = result.via === 'auto' ? '<span style="font-size:10px;color:var(--green);margin-left:6px">● busca automática</span>' : '<span style="font-size:10px;color:var(--gold);margin-left:6px">● link direto</span>';
+  // toggle open if found
+  const shouldOpen = r.hits && r.hits.length > 0;
 
-  card.innerHTML = `
-    <div class="card-stripe ${portal.stripe}"></div>
-    <div class="card-body">
-      <div class="card-top">
-        <div class="card-icon">${portal.icon}</div>
-        <div class="card-info">
-          <div class="card-name">${portal.name} ${via}</div>
-          <div class="card-scope">${portal.scope}</div>
-        </div>
-        ${statusHtml}
-      </div>
-      ${resultsHtml}
-      <div class="card-actions">
-        <a class="btn-search-portal" href="${escHtml(url)}" target="_blank" rel="noopener">
-          🔍 Abrir busca no portal
-        </a>
-        <a class="btn-open-site" href="${escHtml(portal.homeUrl)}" target="_blank" rel="noopener">
-          🌐 Site
-        </a>
-      </div>
+  el.innerHTML = `
+    <div class="card-head" onclick="toggleCard('${portal.id}')">
+      <div class="card-src">${esc(portal.label)} <span class="tag">${esc(portal.tag)}</span></div>
+      ${badge}
+      <div class="card-toggle ${shouldOpen ? 'open' : ''}">▾</div>
+    </div>
+    <div class="card-body ${shouldOpen ? 'open' : ''}" id="body-${portal.id}">
+      ${bodyHtml}
     </div>`;
 }
 
-// ── Progress
-function showProgress(portals, q) {
-  const wrap = document.getElementById('progressWrap');
-  wrap.classList.add('visible');
-  document.getElementById('progressBar').style.width = '0%';
-  document.getElementById('progressText').textContent = `0 / ${portals.length}`;
-  const list = document.getElementById('progressList');
-  list.innerHTML = portals.map(p => `<span class="progress-item" id="prog-${p.id}">${p.icon} ${p.name.split('–')[0].split('·')[0].trim()}</span>`).join('');
-}
-
-function updateProgressItem(id, state) {
-  const el = document.getElementById('prog-' + id);
-  if (el) { el.className = 'progress-item ' + state; }
-}
-
-// ── Toast
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
-
-// ── Utils
-function escHtml(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function toggleCard(id) {
+  const body = document.getElementById(`body-${id}`);
+  const toggle = body?.previousElementSibling?.querySelector('.card-toggle');
+  if (!body) return;
+  body.classList.toggle('open');
+  if (toggle) toggle.classList.toggle('open');
 }
 </script>
 </body>
