@@ -3,1121 +3,1160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monitor Diários Oficiais – FBG</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<title>FilantroMonitor – Busca em Diários e Portais Oficiais</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0e1a;
-    --bg2: #0f1526;
-    --bg3: #141c30;
-    --border: #1e2d4a;
-    --accent: #00d4ff;
-    --accent2: #0099cc;
-    --green: #00ff9d;
-    --yellow: #ffd600;
-    --red: #ff4757;
-    --orange: #ff6b35;
-    --purple: #a855f7;
-    --text: #c8d8f0;
-    --text-dim: #5a7090;
-    --text-bright: #e8f4ff;
-    --panel: rgba(15, 21, 38, 0.95);
-  }
+:root {
+  --ink: #0d1b2a;
+  --ink2: #1a2e45;
+  --ink3: #243d58;
+  --paper: #f5f0e8;
+  --paper2: #ede8db;
+  --paper3: #e2dcd0;
+  --gold: #b8860b;
+  --gold2: #d4a017;
+  --gold3: #f0c040;
+  --red: #8b1a1a;
+  --green: #1a5c2e;
+  --green2: #2d8a4a;
+  --border: rgba(13,27,42,0.15);
+  --shadow: 0 4px 24px rgba(13,27,42,0.12);
+  --radius: 10px;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
 
-  /* Grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* Grain overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
 
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 24px 20px;
-  }
+.wrap { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px 80px; }
 
-  /* Header */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
+/* ── HEADER ── */
+header {
+  border-bottom: 2px solid var(--ink);
+  padding: 28px 0 18px;
+  margin-bottom: 36px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
+.masthead { display:flex; align-items:center; gap:16px; }
 
-  .logo-badge {
-    width: 42px; height: 42px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #0099cc, #00d4ff);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    box-shadow: 0 0 20px rgba(0,212,255,0.3);
-  }
+.masthead-seal {
+  width:54px; height:54px;
+  background: var(--ink);
+  border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:24px;
+  flex-shrink:0;
+  box-shadow: 0 2px 12px rgba(13,27,42,0.3);
+}
 
-  .header-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 17px;
-    font-weight: 800;
-    color: var(--text-bright);
-    letter-spacing: -0.3px;
-  }
+.masthead-text {}
+.masthead-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+.masthead-sub {
+  font-size: 11px;
+  color: var(--ink3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
 
-  .header-sub {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 2px;
-  }
+.header-meta {
+  text-align:right;
+  font-size:11px;
+  color: var(--ink3);
+  letter-spacing: 0.3px;
+}
+.header-date {
+  font-family: 'Playfair Display', serif;
+  font-size:13px;
+  font-weight:700;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+/* ── SEARCH BOX ── */
+.search-section {
+  background: var(--ink);
+  border-radius: var(--radius);
+  padding: 32px 36px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow);
+}
 
-  .badge {
-    font-size: 10px;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .badge-blue  { background: rgba(0,212,255,0.12); color: var(--accent); border: 1px solid rgba(0,212,255,0.25); }
-  .badge-green { background: rgba(0,255,157,0.10); color: var(--green); border: 1px solid rgba(0,255,157,0.25); }
-  .badge-orange{ background: rgba(255,107,53,0.12); color: var(--orange); border: 1px solid rgba(255,107,53,0.25); }
-  .badge-purple{ background: rgba(168,85,247,0.12); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
-  .badge-yellow{ background: rgba(255,214,0,0.10); color: var(--yellow); border: 1px solid rgba(255,214,0,0.25); }
-  .badge-red   { background: rgba(255,71,87,0.12); color: var(--red); border: 1px solid rgba(255,71,87,0.25); }
+.search-eyebrow {
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color: var(--gold2);
+  margin-bottom: 10px;
+}
 
-  /* Schedule bar */
-  .schedule-bar {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
+.search-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+  line-height: 1.3;
+}
 
-  .schedule-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: border-color 0.2s;
-  }
-  .schedule-card:hover { border-color: var(--accent2); }
+.search-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
-  .schedule-icon {
-    font-size: 22px;
-    width: 40px; height: 40px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(0,212,255,0.08);
-    border-radius: 8px;
-    flex-shrink: 0;
-  }
+.search-input-wrap {
+  flex: 1;
+  min-width: 260px;
+  position: relative;
+}
 
-  .schedule-label {
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 4px;
-  }
+.search-input-wrap::before {
+  content: '🔍';
+  position: absolute;
+  left: 14px; top:50%; transform: translateY(-50%);
+  font-size:16px; pointer-events:none;
+}
 
-  .schedule-time {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--accent);
-    letter-spacing: -1px;
-    line-height: 1;
-  }
+#searchInput {
+  width:100%; height:50px;
+  padding: 0 16px 0 44px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  outline:none;
+  transition: border-color 0.2s, background 0.2s;
+}
+#searchInput::placeholder { color: rgba(255,255,255,0.35); }
+#searchInput:focus {
+  border-color: var(--gold2);
+  background: rgba(255,255,255,0.14);
+}
 
-  .schedule-desc {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 3px;
-  }
+#searchBtn {
+  height: 50px;
+  padding: 0 32px;
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  transition: background 0.2s, transform 0.1s;
+  display:flex; align-items:center; gap:8px;
+}
+#searchBtn:hover { background: var(--gold2); }
+#searchBtn:active { transform: scale(0.98); }
+#searchBtn:disabled { background: #555; cursor:not-allowed; }
 
-  /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 2px;
-    margin-bottom: 16px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 4px;
-  }
+.filter-row {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 
-  .tab {
-    flex: 1;
-    padding: 8px 12px;
-    border-radius: 7px;
-    border: none;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    transition: all 0.2s;
-    text-align: center;
-  }
-  .tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-  .tab.active {
-    background: var(--bg3);
-    color: var(--accent);
-    border: 1px solid var(--border);
-  }
+.filter-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+  letter-spacing: 0.3px;
+}
+.filter-chip:hover { border-color: var(--gold2); color: var(--gold3); }
+.filter-chip.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+}
 
-  /* Panels */
-  .panel { display: none; }
-  .panel.active { display: block; }
+/* ── STATS BAR ── */
+.stats-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
 
-  /* Console */
-  .console-wrap {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
+.stat-pill {
+  display:flex; align-items:center; gap:6px;
+  background: var(--paper2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--ink2);
+}
+.stat-pill strong { color: var(--ink); }
+.stat-dot { width:7px;height:7px;border-radius:50%; flex-shrink:0; }
+.dot-ok    { background: var(--green2); }
+.dot-warn  { background: var(--gold); }
+.dot-load  { background: #888; animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .console-topbar {
-    background: var(--bg3);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+/* ── RESULTS GRID ── */
+.section-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.section-count {
+  font-size: 12px;
+  color: var(--ink3);
+}
 
-  .console-dots {
-    display: flex; gap: 6px;
-  }
-  .dot {
-    width: 11px; height: 11px;
-    border-radius: 50%;
-  }
-  .dot-red    { background: #ff5f57; }
-  .dot-yellow { background: #ffbd2e; }
-  .dot-green  { background: #28ca41; }
+/* Category groups */
+.category-group { margin-bottom: 36px; }
 
-  .console-title {
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.5px;
-  }
+.category-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 12px;
+  display:flex; align-items:center; gap:8px;
+}
+.category-label::after {
+  content:'';
+  flex:1; height:1px;
+  background: linear-gradient(to right, var(--border), transparent);
+}
 
-  .copy-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    padding: 4px 12px;
-    background: rgba(0,212,255,0.1);
-    border: 1px solid rgba(0,212,255,0.25);
-    color: var(--accent);
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.3px;
-  }
-  .copy-btn:hover { background: rgba(0,212,255,0.2); }
-  .copy-btn.copied { color: var(--green); border-color: rgba(0,255,157,0.4); background: rgba(0,255,157,0.1); }
+.portals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
 
-  .console-body {
-    padding: 20px 24px;
-    overflow-x: auto;
-    max-height: 620px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
+/* Portal card */
+.portal-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+.portal-card:hover {
+  box-shadow: 0 8px 32px rgba(13,27,42,0.12);
+  transform: translateY(-2px);
+}
 
-  .console-body::-webkit-scrollbar { width: 5px; }
-  .console-body::-webkit-scrollbar-track { background: transparent; }
-  .console-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.card-stripe {
+  height: 4px;
+  background: var(--ink);
+}
+.stripe-federal  { background: #1a3a6b; }
+.stripe-mg       { background: #006400; }
+.stripe-sp       { background: #8b0000; }
+.stripe-rj       { background: #4a0082; }
+.stripe-rs       { background: #8b4513; }
+.stripe-pr       { background: #006b6b; }
+.stripe-tcu      { background: #8b6914; }
+.stripe-tcmg     { background: #2d6b2d; }
+.stripe-tj       { background: #4a3580; }
+.stripe-cnes     { background: #006080; }
+.stripe-transp   { background: #b84000; }
 
-  pre {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px;
-    line-height: 1.75;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
+.card-body { padding: 16px 18px; }
 
-  /* Syntax colors */
-  .c-comment  { color: #3d5470; font-style: italic; }
-  .c-section  { color: var(--accent); font-weight: 700; }
-  .c-key      { color: var(--purple); }
-  .c-val      { color: var(--green); }
-  .c-url      { color: #60a5fa; }
-  .c-string   { color: var(--yellow); }
-  .c-number   { color: var(--orange); }
-  .c-keyword  { color: var(--red); font-weight: 500; }
-  .c-op       { color: var(--text-dim); }
-  .c-html     { color: #f97316; }
-  .c-dim      { color: var(--text-dim); }
-  .c-bright   { color: var(--text-bright); font-weight: 500; }
-  .c-warn     { color: var(--yellow); }
-  .c-ok       { color: var(--green); }
-  .c-err      { color: var(--red); }
-  .c-step     { color: var(--accent2); font-weight: 700; }
+.card-top {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
 
-  /* Flow diagram */
-  .flow-wrap {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-  }
+.card-icon {
+  width:36px; height:36px;
+  border-radius:8px;
+  background: var(--paper2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+  flex-shrink:0;
+}
 
-  .flow-node {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 4px;
-  }
+.card-info { flex:1; min-width:0; }
+.card-name {
+  font-weight:600;
+  font-size:13px;
+  color: var(--ink);
+  line-height:1.3;
+  margin-bottom: 2px;
+}
+.card-scope {
+  font-size:11px;
+  color: var(--ink3);
+}
 
-  .flow-connector {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 36px;
-    flex-shrink: 0;
-  }
+.card-status {
+  display:flex; align-items:center; gap:5px;
+  font-size:10px;
+  padding:3px 9px;
+  border-radius:20px;
+  flex-shrink:0;
+  white-space:nowrap;
+}
+.status-ready   { background:#e8f5e9; color: var(--green); border:1px solid #b2dfdb; }
+.status-loading { background:#fff8e1; color:#856000; border:1px solid #ffe082; }
+.status-found   { background:#e3f2fd; color:#1a4a8b; border:1px solid #90caf9; }
+.status-none    { background:#fce4ec; color: var(--red); border:1px solid #f48fb1; }
+.status-error   { background:#f3e5f5; color:#6a1b9a; border:1px solid #ce93d8; }
 
-  .node-icon {
-    width: 36px; height: 36px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-    border: 1px solid;
-  }
+.card-desc {
+  font-size:12px;
+  color: var(--ink3);
+  line-height:1.5;
+  margin-bottom: 12px;
+}
 
-  .node-trigger { background: rgba(0,212,255,0.12); border-color: rgba(0,212,255,0.3); }
-  .node-var     { background: rgba(168,85,247,0.12); border-color: rgba(168,85,247,0.3); }
-  .node-http    { background: rgba(96,165,250,0.12); border-color: rgba(96,165,250,0.3); }
-  .node-cond    { background: rgba(255,214,0,0.12);  border-color: rgba(255,214,0,0.3); }
-  .node-email   { background: rgba(0,255,157,0.10);  border-color: rgba(0,255,157,0.3); }
-  .node-append  { background: rgba(255,107,53,0.12); border-color: rgba(255,107,53,0.3); }
+/* Results inside card */
+.card-results { margin-bottom: 12px; }
 
-  .flow-line {
-    width: 2px;
-    background: var(--border);
-    flex: 1;
-    min-height: 20px;
-    margin: 2px 0;
-  }
+.result-item {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius:6px;
+  padding:10px 12px;
+  margin-bottom:8px;
+  transition: border-color 0.15s;
+}
+.result-item:hover { border-color: var(--gold); }
+.result-item:last-child { margin-bottom:0; }
 
-  .node-content {
-    flex: 1;
-    padding: 10px 14px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 20px;
-  }
+.result-title {
+  font-size:12px;
+  font-weight:600;
+  color: var(--ink);
+  margin-bottom:4px;
+  line-height:1.4;
+}
 
-  .node-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-bright);
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.result-meta {
+  display:flex; flex-wrap:wrap; gap:8px;
+  margin-bottom:6px;
+}
+.result-tag {
+  font-size:10px;
+  background: var(--paper2);
+  color: var(--ink3);
+  padding:2px 7px;
+  border-radius:3px;
+}
 
-  .node-detail {
-    font-size: 11px;
-    color: var(--text-dim);
-    line-height: 1.6;
-  }
+.result-link {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:11px;
+  color: var(--gold);
+  font-weight:600;
+  text-decoration:none;
+  transition: color 0.15s;
+}
+.result-link:hover { color: var(--gold2); text-decoration:underline; }
 
-  .node-detail code {
-    background: rgba(0,212,255,0.08);
-    color: var(--accent);
-    padding: 1px 6px;
-    border-radius: 3px;
-    font-size: 10.5px;
-  }
+.card-actions {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
 
-  .branch-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-left: 52px;
-    margin-bottom: 8px;
-  }
+.btn-search-portal {
+  flex:1;
+  padding:8px 14px;
+  background: var(--ink);
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  transition: background 0.15s;
+  text-decoration:none;
+}
+.btn-search-portal:hover { background: var(--ink3); }
 
-  .branch-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-  }
+.btn-open-site {
+  padding:8px 12px;
+  background: transparent;
+  color: var(--ink2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;
+  cursor:pointer;
+  transition: all 0.15s;
+  text-decoration:none;
+  display:flex; align-items:center; gap:4px;
+}
+.btn-open-site:hover { background: var(--paper2); border-color: var(--ink2); }
 
-  .branch-yes { border-top: 2px solid var(--green); }
-  .branch-no  { border-top: 2px solid var(--red); }
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--paper2) 25%, var(--paper3) 50%, var(--paper2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius:4px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.sk-line { height:12px; margin-bottom:6px; }
+.sk-line.short { width:60%; }
+.sk-line.medium { width:80%; }
 
-  .branch-label {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 6px;
-  }
-  .branch-yes .branch-label { color: var(--green); }
-  .branch-no  .branch-label { color: var(--red); }
+/* Empty state */
+.empty-state {
+  grid-column: 1/-1;
+  text-align:center;
+  padding:60px 20px;
+  color: var(--ink3);
+}
+.empty-icon { font-size:48px; margin-bottom:16px; }
+.empty-title {
+  font-family:'Playfair Display',serif;
+  font-size:20px;
+  color: var(--ink);
+  margin-bottom:8px;
+}
+.empty-sub { font-size:13px; line-height:1.6; }
 
-  .branch-detail {
-    font-size: 11px;
-    color: var(--text-dim);
-    line-height: 1.6;
-  }
+/* Progress bar */
+.progress-wrap {
+  background: var(--paper2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display:none;
+}
+.progress-wrap.visible { display:block; }
+.progress-title {
+  font-size:13px; font-weight:600; color: var(--ink);
+  margin-bottom:12px;
+  display:flex; align-items:center; gap:8px;
+}
+.progress-bar-outer {
+  height:6px; background: var(--paper3); border-radius:3px; overflow:hidden;
+  margin-bottom: 10px;
+}
+.progress-bar-inner {
+  height:100%; background: var(--gold);
+  border-radius:3px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-list {
+  display:flex; flex-wrap:wrap; gap:6px;
+}
+.progress-item {
+  font-size:11px; padding:3px 10px;
+  border-radius:20px;
+  border:1px solid var(--border);
+  color: var(--ink3);
+  background: #fff;
+}
+.progress-item.done { background:#e8f5e9; color: var(--green); border-color:#b2dfdb; }
+.progress-item.running { background:#fff8e1; color:#856000; border-color:#ffe082; animation: blink 0.8s infinite; }
+.progress-item.fail { background:#fce4ec; color: var(--red); border-color:#f48fb1; }
 
-  /* Status bar */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin-top: 16px;
-    font-size: 11px;
-    color: var(--text-dim);
-  }
+/* Toast */
+.toast {
+  position:fixed; bottom:24px; right:24px; z-index:9999;
+  background: var(--ink);
+  color:#fff;
+  padding:12px 20px;
+  border-radius:8px;
+  font-size:13px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  transform: translateY(80px);
+  opacity:0;
+  transition: all 0.3s;
+  max-width:320px;
+}
+.toast.show { transform:translateY(0); opacity:1; }
 
-  .status-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+/* Footer */
+footer {
+  border-top: 2px solid var(--ink);
+  margin-top: 60px;
+  padding: 20px 0;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:12px;
+}
+.footer-text { font-size:11px; color: var(--ink3); }
+.footer-portals { font-size:11px; color: var(--ink3); }
 
-  .status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-  .status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .status-dot.warn { background: var(--yellow); }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  /* Responsive */
-  @media (max-width: 640px) {
-    .schedule-bar { grid-template-columns: 1fr; }
-    .branch-row { grid-template-columns: 1fr; }
-    .header { flex-direction: column; align-items: flex-start; gap: 12px; }
-  }
+@media(max-width:640px){
+  .portals-grid { grid-template-columns:1fr; }
+  header { flex-direction:column; align-items:flex-start; }
+  .search-section { padding:20px; }
+  #searchBtn { width:100%; justify-content:center; }
+}
 </style>
 </head>
 <body>
-<div class="wrapper">
+<div class="wrap">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <div class="logo-badge">🏥</div>
-      <div>
-        <div class="header-title">Monitor · Diários Oficiais</div>
-        <div class="header-sub">Fundação Benjamin Guimarães · Hospital da Baleia</div>
+  <!-- HEADER -->
+  <header>
+    <div class="masthead">
+      <div class="masthead-seal">⚖️</div>
+      <div class="masthead-text">
+        <div class="masthead-name">FilantroMonitor</div>
+        <div class="masthead-sub">Busca em Diários &amp; Portais Oficiais do Brasil</div>
       </div>
     </div>
-    <div class="header-right">
-      <span class="badge badge-green">● ATIVO</span>
-      <span class="badge badge-blue">Power Automate</span>
+    <div class="header-meta">
+      <div class="header-date" id="currentDate">—</div>
+      <div id="portalCount">0 portais ativos</div>
     </div>
-  </div>
+  </header>
 
-  <!-- Schedule cards -->
-  <div class="schedule-bar">
-    <div class="schedule-card">
-      <div class="schedule-icon">🧪</div>
-      <div>
-        <div class="schedule-label">Execução de Teste</div>
-        <div class="schedule-time">16:30</div>
-        <div class="schedule-desc">Hoje · único disparo</div>
+  <!-- SEARCH -->
+  <div class="search-section">
+    <div class="search-eyebrow">Busca Unificada</div>
+    <div class="search-title">Digite o nome da instituição, CNPJ ou termo para monitorar</div>
+    <div class="search-row">
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" placeholder="Ex: Fundação Benjamin Guimarães, Hospital da Baleia..." autocomplete="off">
       </div>
-      <div style="margin-left:auto"><span class="badge badge-orange">TESTE</span></div>
+      <button id="searchBtn" onclick="startSearch()">
+        <span>🔎</span> Buscar em Todos os Portais
+      </button>
     </div>
-    <div class="schedule-card">
-      <div class="schedule-icon">🔁</div>
-      <div>
-        <div class="schedule-label">Execução Diária</div>
-        <div class="schedule-time">09:30</div>
-        <div class="schedule-desc">Todos os dias · UTC-3 Brasília</div>
-      </div>
-      <div style="margin-left:auto"><span class="badge badge-green">PRODUÇÃO</span></div>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('prompt')">📋 Prompt Copilot</button>
-    <button class="tab" onclick="switchTab('flow')">🔀 Diagrama do Fluxo</button>
-    <button class="tab" onclick="switchTab('urls')">🌐 URLs de Busca</button>
-    <button class="tab" onclick="switchTab('email')">📧 Templates Email</button>
-  </div>
-
-  <!-- PANEL: PROMPT -->
-  <div class="panel active" id="panel-prompt">
-    <div class="console-wrap">
-      <div class="console-topbar">
-        <div class="console-dots">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-        </div>
-        <div class="console-title">copilot-power-automate-prompt.txt</div>
-        <button class="copy-btn" id="btn-prompt" onclick="copyContent('content-prompt', 'btn-prompt')">⎘ Copiar tudo</button>
-      </div>
-      <div class="console-body">
-        <pre id="content-prompt"><span class="c-comment">// ═══════════════════════════════════════════════════════════════════
-// POWER AUTOMATE COPILOT – PROMPT COMPLETO
-// Monitor de Diários Oficiais · Fundação Benjamin Guimarães
-// ═══════════════════════════════════════════════════════════════════</span>
-
-<span class="c-bright">Create a scheduled cloud flow with two execution schedules:</span>
-
-<span class="c-section">► SCHEDULE 1 – TEST (run once today)</span>
-<span class="c-key">  Trigger type :</span> <span class="c-val">Recurrence</span>
-<span class="c-key">  Frequency    :</span> <span class="c-val">Day</span>
-<span class="c-key">  Interval     :</span> <span class="c-number">1</span>
-<span class="c-key">  Start time   :</span> <span class="c-string">Today at 16:30:00</span>
-<span class="c-key">  Timezone     :</span> <span class="c-string">(UTC-03:00) Brasília</span>
-<span class="c-comment">  // After test validation, manually update to Schedule 2</span>
-
-<span class="c-section">► SCHEDULE 2 – PRODUCTION (daily)</span>
-<span class="c-key">  Trigger type :</span> <span class="c-val">Recurrence</span>
-<span class="c-key">  Frequency    :</span> <span class="c-val">Day</span>
-<span class="c-key">  Interval     :</span> <span class="c-number">1</span>
-<span class="c-key">  Start time   :</span> <span class="c-string">09:30:00</span>
-<span class="c-key">  Timezone     :</span> <span class="c-string">(UTC-03:00) Brasília</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────
-// ⚠️  CRITICAL CONNECTOR RULE — READ BEFORE BUILDING
-// ───────────────────────────────────────────────────────────────────</span>
-<span class="c-warn">IMPORTANT: For ALL HTTP actions in this flow:</span>
-<span class="c-warn">  - Use ONLY the standard "HTTP" connector</span>
-<span class="c-warn">  - Do NOT use "HTTP with Microsoft Entra ID"</span>
-<span class="c-warn">  - Set Authentication = "None" on every HTTP action</span>
-<span class="c-warn">  - All target sites are PUBLIC — no auth required</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────
-// STEP 1 — INITIALIZE VARIABLES
-// ───────────────────────────────────────────────────────────────────</span>
-<span class="c-section">Initialize the following variables (in this exact order):</span>
-
-<span class="c-step">Variable 1:</span>
-<span class="c-key">  Name  :</span> <span class="c-val">varResultados</span>
-<span class="c-key">  Type  :</span> <span class="c-val">String</span>
-<span class="c-key">  Value :</span> <span class="c-string">""</span>
-<span class="c-comment">  // Will accumulate all HTML-formatted results</span>
-
-<span class="c-step">Variable 2:</span>
-<span class="c-key">  Name  :</span> <span class="c-val">varDataHoje</span>
-<span class="c-key">  Type  :</span> <span class="c-val">String</span>
-<span class="c-key">  Value :</span> <span class="c-string">formatDateTime(utcNow(), 'dd/MM/yyyy')</span>
-
-<span class="c-step">Variable 3:</span>
-<span class="c-key">  Name  :</span> <span class="c-val">varDataOntem</span>
-<span class="c-key">  Type  :</span> <span class="c-val">String</span>
-<span class="c-key">  Value :</span> <span class="c-string">formatDateTime(addDays(utcNow(), -1), 'dd/MM/yyyy')</span>
-
-<span class="c-step">Variable 4:</span>
-<span class="c-key">  Name  :</span> <span class="c-val">varTermoBusca1</span>
-<span class="c-key">  Type  :</span> <span class="c-val">String</span>
-<span class="c-key">  Value :</span> <span class="c-string">"Fundação Benjamin Guimarães"</span>
-
-<span class="c-step">Variable 5:</span>
-<span class="c-key">  Name  :</span> <span class="c-val">varTermoBusca2</span>
-<span class="c-key">  Type  :</span> <span class="c-val">String</span>
-<span class="c-key">  Value :</span> <span class="c-string">"Hospital da Baleia"</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────
-// STEP 2 — HTTP GET REQUESTS (6 calls, all unauthenticated)
-// ───────────────────────────────────────────────────────────────────</span>
-<span class="c-section">Create 6 individual HTTP actions using the standard HTTP connector:</span>
-
-<span class="c-step">HTTP Action 1 — DOU · Fundação Benjamin Guimarães</span>
-<span class="c-key">  Connector      :</span> <span class="c-val">HTTP (standard, NOT Entra ID)</span>
-<span class="c-key">  Method         :</span> <span class="c-val">GET</span>
-<span class="c-key">  Authentication :</span> <span class="c-val">None</span>
-<span class="c-key">  URI            :</span>
-<span class="c-url">    https://www.in.gov.br/consulta/-/busca-oficial?q=%22Funda%C3%A7%C3%A3o+Benjamin+Guimar%C3%A3es%22&s=pub_dt&o=desc</span>
-<span class="c-key">  Headers        :</span>
-<span class="c-string">    User-Agent: Mozilla/5.0 (compatible; PowerAutomate-Monitor/1.0)</span>
-<span class="c-string">    Accept: text/html,application/xhtml+xml</span>
-
-<span class="c-step">HTTP Action 2 — DOU · Hospital da Baleia</span>
-<span class="c-key">  Connector      :</span> <span class="c-val">HTTP (standard, NOT Entra ID)</span>
-<span class="c-key">  Method         :</span> <span class="c-val">GET</span>
-<span class="c-key">  Authentication :</span> <span class="c-val">None</span>
-<span class="c-key">  URI            :</span>
-<span class="c-url">    https://www.in.gov.br/consulta/-/busca-oficial?q=%22Hospital+da+Baleia%22&s=pub_dt&o=desc</span>
-<span class="c-key">  Headers        :</span>
-<span class="c-string">    User-Agent: Mozilla/5.0 (compatible; PowerAutomate-Monitor/1.0)</span>
-<span class="c-string">    Accept: text/html,application/xhtml+xml</span>
-
-<span class="c-step">HTTP Action 3 — Jornal Minas Gerais · Fundação Benjamin Guimarães</span>
-<span class="c-key">  Connector      :</span> <span class="c-val">HTTP (standard, NOT Entra ID)</span>
-<span class="c-key">  Method         :</span> <span class="c-val">GET</span>
-<span class="c-key">  Authentication :</span> <span class="c-val">None</span>
-<span class="c-key">  URI            :</span>
-<span class="c-url">    https://www.jornalminasgerais.mg.gov.br/?s=Funda%C3%A7%C3%A3o+Benjamin+Guimar%C3%A3es</span>
-<span class="c-key">  Headers        :</span>
-<span class="c-string">    User-Agent: Mozilla/5.0 (compatible; PowerAutomate-Monitor/1.0)</span>
-<span class="c-string">    Accept: text/html,application/xhtml+xml</span>
-
-<span class="c-step">HTTP Action 4 — Jornal Minas Gerais · Hospital da Baleia</span>
-<span class="c-key">  Connector      :</span> <span class="c-val">HTTP (standard, NOT Entra ID)</span>
-<span class="c-key">  Method         :</span> <span class="c-val">GET</span>
-<span class="c-key">  Authentication :</span> <span class="c-val">None</span>
-<span class="c-key">  URI            :</span>
-<span class="c-url">    https://www.jornalminasgerais.mg.gov.br/?s=Hospital+da+Baleia</span>
-<span class="c-key">  Headers        :</span>
-<span class="c-string">    User-Agent: Mozilla/5.0 (compatible; PowerAutomate-Monitor/1.0)</span>
-<span class="c-string">    Accept: text/html,application/xhtml+xml</span>
-
-<span class="c-step">HTTP Action 5 — DOM-BH · Fundação Benjamin Guimarães</span>
-<span class="c-key">  Connector      :</span> <span class="c-val">HTTP (standard, NOT Entra ID)</span>
-<span class="c-key">  Method         :</span> <span class="c-val">GET</span>
-<span class="c-key">  Authentication :</span> <span class="c-val">None</span>
-<span class="c-key">  URI            :</span>
-<span class="c-url">    https://dom-web.pbh.gov.br/apex/f?p=2200:1:::NO:1:P1_PESQUISA:Funda%C3%A7%C3%A3o%20Benjamin%20Guimar%C3%A3es</span>
-<span class="c-key">  Headers        :</span>
-<span class="c-string">    User-Agent: Mozilla/5.0 (compatible; PowerAutomate-Monitor/1.0)</span>
-<span class="c-string">    Accept: text/html,application/xhtml+xml</span>
-
-<span class="c-step">HTTP Action 6 — DOM-BH · Hospital da Baleia</span>
-<span class="c-key">  Connector      :</span> <span class="c-val">HTTP (standard, NOT Entra ID)</span>
-<span class="c-key">  Method         :</span> <span class="c-val">GET</span>
-<span class="c-key">  Authentication :</span> <span class="c-val">None</span>
-<span class="c-key">  URI            :</span>
-<span class="c-url">    https://dom-web.pbh.gov.br/apex/f?p=2200:1:::NO:1:P1_PESQUISA:Hospital%20da%20Baleia</span>
-<span class="c-key">  Headers        :</span>
-<span class="c-string">    User-Agent: Mozilla/5.0 (compatible; PowerAutomate-Monitor/1.0)</span>
-<span class="c-string">    Accept: text/html,application/xhtml+xml</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────
-// STEP 3 — PROCESS EACH RESPONSE & APPEND TO varResultados
-// ───────────────────────────────────────────────────────────────────</span>
-<span class="c-section">After each HTTP action, add a Condition block:</span>
-
-<span class="c-step">For HTTP Action 1 (DOU · FBG) — after the action:</span>
-<span class="c-key">  Condition :</span>
-<span class="c-val">    OR(
-      contains(body('HTTP_Action_1'), varDataHoje),
-      contains(body('HTTP_Action_1'), varDataOntem),
-      contains(body('HTTP_Action_1'), 'Fundação Benjamin')
-    )</span>
-<span class="c-key">  If YES → Append to string variable varResultados:</span>
-<span class="c-html">    &lt;div style="border-left:3px solid #0099cc;padding:10px 14px;margin-bottom:12px;background:#f0f8ff"&gt;
-    &lt;b&gt;📰 Diário Oficial da União&lt;/b&gt;&lt;br&gt;
-    &lt;b&gt;Termo:&lt;/b&gt; Fundação Benjamin Guimarães&lt;br&gt;
-    &lt;b&gt;Data verificada:&lt;/b&gt; @{varDataHoje} e @{varDataOntem}&lt;br&gt;
-    &lt;b&gt;🔗 Link:&lt;/b&gt; &lt;a href="https://www.in.gov.br/consulta/-/busca-oficial?q=%22Funda%C3%A7%C3%A3o+Benjamin+Guimar%C3%A3es%22"&gt;
-    Acessar publicação no DOU&lt;/a&gt;&lt;hr&gt;&lt;/div&gt;</span>
-
-<span class="c-comment">  // Repeat this same Condition + Append pattern for HTTP Actions 2 through 6,
-  // adjusting the action name, gazette name, search term, and URL accordingly.</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────
-// STEP 4 — CONDITION: WERE ANY RESULTS FOUND?
-// ───────────────────────────────────────────────────────────────────</span>
-<span class="c-section">Add a main Condition control after all HTTP actions:</span>
-
-<span class="c-key">  Expression :</span> <span class="c-val">not(empty(variables('varResultados')))</span>
-<span class="c-key">  YES branch :</span> <span class="c-ok">Send email WITH results</span>
-<span class="c-key">  NO  branch :</span> <span class="c-err">Send email — no results found</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────
-// STEP 5A — EMAIL: RESULTS FOUND
-// ───────────────────────────────────────────────────────────────────</span>
-<span class="c-section">YES branch → Office 365 Outlook – Send an email (V2):</span>
-
-<span class="c-key">  To      :</span> <span class="c-string">nucleodeprojeto@hospitaldabaleia.org.br</span>
-<span class="c-key">  Subject :</span> <span class="c-string">Monitoramento de Diários Oficiais – Fundação Benjamin Guimarães</span>
-<span class="c-key">  Is HTML :</span> <span class="c-val">Yes</span>
-<span class="c-key">  Body    :</span>
-<span class="c-html">  &lt;div style="font-family:Segoe UI,Arial,sans-serif;max-width:700px;margin:0 auto"&gt;
-    &lt;div style="background:#003566;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0"&gt;
-      &lt;h2 style="margin:0;font-size:18px"&gt;
-        📋 Monitoramento de Diários Oficiais
-      &lt;/h2&gt;
-      &lt;p style="margin:4px 0 0;font-size:13px;opacity:0.8"&gt;
-        Fundação Benjamin Guimarães · Hospital da Baleia
-      &lt;/p&gt;
-    &lt;/div&gt;
-    &lt;div style="padding:20px 24px;border:1px solid #dce8f5;border-top:none"&gt;
-      &lt;p&gt;Prezados,&lt;/p&gt;
-      &lt;p&gt;O monitoramento automático identificou publicações para os períodos
-         &lt;strong&gt;@{varDataOntem}&lt;/strong&gt; e &lt;strong&gt;@{varDataHoje}&lt;/strong&gt;:
-      &lt;/p&gt;
-      &lt;hr style="border:none;border-top:1px solid #e0eaf5;margin:16px 0"&gt;
-      @{variables('varResultados')}
-      &lt;hr style="border:none;border-top:1px solid #e0eaf5;margin:16px 0"&gt;
-      &lt;p style="font-size:12px;color:#666"&gt;
-        ⚙️ Mensagem gerada automaticamente pelo sistema de monitoramento.&lt;br&gt;
-        Fontes: DOU (in.gov.br) · Jornal Minas Gerais · DOM-BH
-      &lt;/p&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────
-// STEP 5B — EMAIL: NO RESULTS FOUND
-// ───────────────────────────────────────────────────────────────────</span>
-<span class="c-section">NO branch → Office 365 Outlook – Send an email (V2):</span>
-
-<span class="c-key">  To      :</span> <span class="c-string">nucleodeprojeto@hospitaldabaleia.org.br</span>
-<span class="c-key">  Subject :</span> <span class="c-string">Monitoramento de Diários Oficiais – Fundação Benjamin Guimarães</span>
-<span class="c-key">  Is HTML :</span> <span class="c-val">Yes</span>
-<span class="c-key">  Body    :</span>
-<span class="c-html">  &lt;div style="font-family:Segoe UI,Arial,sans-serif;max-width:700px;margin:0 auto"&gt;
-    &lt;div style="background:#003566;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0"&gt;
-      &lt;h2 style="margin:0;font-size:18px"&gt;
-        📋 Monitoramento de Diários Oficiais
-      &lt;/h2&gt;
-    &lt;/div&gt;
-    &lt;div style="padding:20px 24px;border:1px solid #dce8f5;border-top:none"&gt;
-      &lt;p&gt;Prezados,&lt;/p&gt;
-      &lt;p&gt;O monitoramento de &lt;strong&gt;@{varDataHoje}&lt;/strong&gt;
-         &lt;strong style="color:#c0392b"&gt;não encontrou publicações&lt;/strong&gt; para:
-      &lt;/p&gt;
-      &lt;ul&gt;
-        &lt;li&gt;Fundação Benjamin Guimarães&lt;/li&gt;
-        &lt;li&gt;Hospital da Baleia&lt;/li&gt;
-      &lt;/ul&gt;
-      &lt;p&gt;&lt;strong&gt;Fontes verificadas:&lt;/strong&gt;&lt;/p&gt;
-      &lt;ul&gt;
-        &lt;li&gt;Diário Oficial da União — &lt;a href="https://www.in.gov.br"&gt;in.gov.br&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;Jornal Minas Gerais — &lt;a href="https://www.jornalminasgerais.mg.gov.br"&gt;jornalminasgerais.mg.gov.br&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;Diário Oficial BH — &lt;a href="https://dom-web.pbh.gov.br"&gt;dom-web.pbh.gov.br&lt;/a&gt;&lt;/li&gt;
-      &lt;/ul&gt;
-      &lt;p style="font-size:12px;color:#666"&gt;
-        ⚙️ Mensagem gerada automaticamente.
-      &lt;/p&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;</span>
-
-<span class="c-comment">// ═══════════════════════════════════════════════════════════════════
-// ⚠️  POST-CREATION CHECKLIST
-// ═══════════════════════════════════════════════════════════════════</span>
-<span class="c-warn">□ Verify all 6 HTTP actions use "HTTP" connector (not Entra ID)</span>
-<span class="c-warn">□ Verify Authentication = None on all HTTP actions</span>
-<span class="c-warn">□ Confirm Recurrence timezone = (UTC-03:00) Brasília</span>
-<span class="c-warn">□ Confirm Office 365 Outlook connection = nucleodeprojetos@hosp...</span>
-<span class="c-warn">□ Run test at 16:30 today and check inbox</span>
-<span class="c-warn">□ After test OK → edit Recurrence to 09:30 daily</span>
-<span class="c-ok">✓ Save and enable the flow</span></pre>
-      </div>
+    <div class="filter-row" id="filterRow">
+      <span class="filter-chip active" data-cat="all" onclick="toggleFilter(this)">Todos</span>
+      <span class="filter-chip active" data-cat="federal" onclick="toggleFilter(this)">Federal</span>
+      <span class="filter-chip active" data-cat="mg" onclick="toggleFilter(this)">Minas Gerais</span>
+      <span class="filter-chip active" data-cat="sp" onclick="toggleFilter(this)">São Paulo</span>
+      <span class="filter-chip active" data-cat="rj" onclick="toggleFilter(this)">Rio de Janeiro</span>
+      <span class="filter-chip active" data-cat="rs" onclick="toggleFilter(this)">Rio Grande do Sul</span>
+      <span class="filter-chip active" data-cat="pr" onclick="toggleFilter(this)">Paraná</span>
+      <span class="filter-chip active" data-cat="tcu" onclick="toggleFilter(this)">Tribunais de Contas</span>
+      <span class="filter-chip active" data-cat="tj" onclick="toggleFilter(this)">Tribunais de Justiça</span>
+      <span class="filter-chip active" data-cat="saude" onclick="toggleFilter(this)">Saúde / CNES</span>
+      <span class="filter-chip active" data-cat="transp" onclick="toggleFilter(this)">Transparência</span>
     </div>
   </div>
 
-  <!-- PANEL: FLOW DIAGRAM -->
-  <div class="panel" id="panel-flow">
-    <div class="flow-wrap">
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-trigger">⏰</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-blue">GATILHO</span> Recurrence</div>
-          <div class="node-detail">Teste: hoje às <code>16:30</code> · Produção: diário às <code>09:30</code> · Fuso: <code>UTC-3 Brasília</code></div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-var">𝑥</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-purple">VARIÁVEIS</span> Initialize (5x)</div>
-          <div class="node-detail">
-            <code>varResultados</code> = "" &nbsp;·&nbsp;
-            <code>varDataHoje</code> = hoje &nbsp;·&nbsp;
-            <code>varDataOntem</code> = ontem &nbsp;·&nbsp;
-            <code>varTermoBusca1</code> = "Fundação Benjamin Guimarães" &nbsp;·&nbsp;
-            <code>varTermoBusca2</code> = "Hospital da Baleia"
-          </div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-http">🌐</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-blue">HTTP GET</span> DOU — Fundação Benjamin Guimarães</div>
-          <div class="node-detail">Conector: <code>HTTP padrão</code> · Auth: <code>None</code> · in.gov.br</div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-http">🌐</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-blue">HTTP GET</span> DOU — Hospital da Baleia</div>
-          <div class="node-detail">Conector: <code>HTTP padrão</code> · Auth: <code>None</code> · in.gov.br</div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-http">🌐</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-blue">HTTP GET</span> Jornal Minas Gerais — Fundação Benjamin Guimarães</div>
-          <div class="node-detail">Conector: <code>HTTP padrão</code> · Auth: <code>None</code> · jornalminasgerais.mg.gov.br</div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-http">🌐</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-blue">HTTP GET</span> Jornal Minas Gerais — Hospital da Baleia</div>
-          <div class="node-detail">Conector: <code>HTTP padrão</code> · Auth: <code>None</code> · jornalminasgerais.mg.gov.br</div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-http">🌐</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-blue">HTTP GET</span> DOM-BH — Fundação Benjamin Guimarães</div>
-          <div class="node-detail">Conector: <code>HTTP padrão</code> · Auth: <code>None</code> · dom-web.pbh.gov.br</div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-http">🌐</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-blue">HTTP GET</span> DOM-BH — Hospital da Baleia</div>
-          <div class="node-detail">Conector: <code>HTTP padrão</code> · Auth: <code>None</code> · dom-web.pbh.gov.br</div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-append">+</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-orange">PROCESSAR</span> Append to varResultados (6x)</div>
-          <div class="node-detail">Para cada resposta HTTP: verificar se contém data de hoje/ontem e acrescentar resultado em HTML ao <code>varResultados</code></div>
-        </div>
-      </div>
-
-      <div class="flow-node">
-        <div class="flow-connector">
-          <div class="node-icon node-cond">⚖️</div>
-          <div class="flow-line"></div>
-        </div>
-        <div class="node-content">
-          <div class="node-title"><span class="badge badge-yellow">CONDIÇÃO</span> varResultados está vazio?</div>
-          <div class="node-detail">Expressão: <code>not(empty(variables('varResultados')))</code></div>
-        </div>
-      </div>
-
-      <div class="branch-row">
-        <div class="branch-card branch-yes">
-          <div class="branch-label">✅ SIM — Resultados encontrados</div>
-          <div class="branch-detail">
-            <strong>Outlook – Send email (V2)</strong><br>
-            Para: <code>nucleodeprojeto@hospitaldabaleia.org.br</code><br>
-            Assunto: Monitoramento de Diários Oficiais – FBG<br>
-            Body: HTML com <code>@{varResultados}</code>
-          </div>
-        </div>
-        <div class="branch-card branch-no">
-          <div class="branch-label">❌ NÃO — Nenhum resultado</div>
-          <div class="branch-detail">
-            <strong>Outlook – Send email (V2)</strong><br>
-            Para: <code>nucleodeprojeto@hospitaldabaleia.org.br</code><br>
-            Assunto: Monitoramento de Diários Oficiais – FBG<br>
-            Body: HTML informando ausência de publicações
-          </div>
-        </div>
-      </div>
-
-    </div>
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-title">⏳ Consultando portais... <span id="progressText">0 / 0</span></div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+    <div class="progress-list" id="progressList"></div>
   </div>
 
-  <!-- PANEL: URLs -->
-  <div class="panel" id="panel-urls">
-    <div class="console-wrap">
-      <div class="console-topbar">
-        <div class="console-dots">
-          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
-        </div>
-        <div class="console-title">urls-busca-codificadas.txt</div>
-        <button class="copy-btn" id="btn-urls" onclick="copyContent('content-urls', 'btn-urls')">⎘ Copiar tudo</button>
-      </div>
-      <div class="console-body">
-        <pre id="content-urls"><span class="c-comment">// ═══════════════════════════════════════════════════════════════════
-// URLs DE BUSCA — todas públicas, sem autenticação
-// ═══════════════════════════════════════════════════════════════════</span>
-
-<span class="c-section">► DIÁRIO OFICIAL DA UNIÃO — in.gov.br</span>
-
-<span class="c-step">URL 1 — Termo: "Fundação Benjamin Guimarães"</span>
-<span class="c-url">https://www.in.gov.br/consulta/-/busca-oficial?q=%22Funda%C3%A7%C3%A3o+Benjamin+Guimar%C3%A3es%22&s=pub_dt&o=desc</span>
-
-<span class="c-dim">Parâmetros:</span>
-<span class="c-key">  q   </span><span class="c-op">=</span> <span class="c-string">"Fundação Benjamin Guimarães"</span> <span class="c-dim">(URL encoded)</span>
-<span class="c-key">  s   </span><span class="c-op">=</span> <span class="c-val">pub_dt</span> <span class="c-dim">(ordenar por data de publicação)</span>
-<span class="c-key">  o   </span><span class="c-op">=</span> <span class="c-val">desc</span>  <span class="c-dim">(mais recentes primeiro)</span>
-
-<span class="c-step">URL 2 — Termo: "Hospital da Baleia"</span>
-<span class="c-url">https://www.in.gov.br/consulta/-/busca-oficial?q=%22Hospital+da+Baleia%22&s=pub_dt&o=desc</span>
-
-<span class="c-dim">Parâmetros:</span>
-<span class="c-key">  q   </span><span class="c-op">=</span> <span class="c-string">"Hospital da Baleia"</span> <span class="c-dim">(URL encoded)</span>
-<span class="c-key">  s   </span><span class="c-op">=</span> <span class="c-val">pub_dt</span>
-<span class="c-key">  o   </span><span class="c-op">=</span> <span class="c-val">desc</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────</span>
-
-<span class="c-section">► JORNAL MINAS GERAIS — jornalminasgerais.mg.gov.br</span>
-
-<span class="c-step">URL 3 — Termo: "Fundação Benjamin Guimarães"</span>
-<span class="c-url">https://www.jornalminasgerais.mg.gov.br/?s=Funda%C3%A7%C3%A3o+Benjamin+Guimar%C3%A3es</span>
-
-<span class="c-dim">Parâmetros:</span>
-<span class="c-key">  s   </span><span class="c-op">=</span> <span class="c-string">"Fundação Benjamin Guimarães"</span> <span class="c-dim">(parâmetro de busca do WordPress)</span>
-
-<span class="c-step">URL 4 — Termo: "Hospital da Baleia"</span>
-<span class="c-url">https://www.jornalminasgerais.mg.gov.br/?s=Hospital+da+Baleia</span>
-
-<span class="c-dim">Parâmetros:</span>
-<span class="c-key">  s   </span><span class="c-op">=</span> <span class="c-string">"Hospital da Baleia"</span>
-
-<span class="c-comment">// ───────────────────────────────────────────────────────────────────</span>
-
-<span class="c-section">► DIÁRIO OFICIAL DO MUNICÍPIO DE BH — dom-web.pbh.gov.br</span>
-
-<span class="c-step">URL 5 — Termo: "Fundação Benjamin Guimarães"</span>
-<span class="c-url">https://dom-web.pbh.gov.br/apex/f?p=2200:1:::NO:1:P1_PESQUISA:Funda%C3%A7%C3%A3o%20Benjamin%20Guimar%C3%A3es</span>
-
-<span class="c-dim">Parâmetros APEX Oracle:</span>
-<span class="c-key">  p            </span><span class="c-op">=</span> <span class="c-val">2200:1</span>    <span class="c-dim">(app:página)</span>
-<span class="c-key">  P1_PESQUISA  </span><span class="c-op">=</span> <span class="c-string">"Fundação Benjamin Guimarães"</span>
-
-<span class="c-step">URL 6 — Termo: "Hospital da Baleia"</span>
-<span class="c-url">https://dom-web.pbh.gov.br/apex/f?p=2200:1:::NO:1:P1_PESQUISA:Hospital%20da%20Baleia</span>
-
-<span class="c-dim">Parâmetros APEX Oracle:</span>
-<span class="c-key">  p            </span><span class="c-op">=</span> <span class="c-val">2200:1</span>
-<span class="c-key">  P1_PESQUISA  </span><span class="c-op">=</span> <span class="c-string">"Hospital da Baleia"</span>
-
-<span class="c-comment">// ═══════════════════════════════════════════════════════════════════
-// ENCODING DE REFERÊNCIA
-// ═══════════════════════════════════════════════════════════════════</span>
-<span class="c-key">ç  </span><span class="c-op">→</span> <span class="c-val">%C3%A7</span>
-<span class="c-key">ã  </span><span class="c-op">→</span> <span class="c-val">%C3%A3</span>
-<span class="c-key">õ  </span><span class="c-op">→</span> <span class="c-val">%C3%B5</span>
-<span class="c-key">é  </span><span class="c-op">→</span> <span class="c-val">%C3%A9</span>
-<span class="c-key">espaço </span><span class="c-op">→</span> <span class="c-val">+</span> <span class="c-dim">(query string)</span> <span class="c-op">ou</span> <span class="c-val">%20</span> <span class="c-dim">(path)</span></pre>
-      </div>
-    </div>
+  <!-- STATS -->
+  <div class="stats-bar" id="statsBar" style="display:none">
+    <div class="stat-pill"><span class="stat-dot dot-ok"></span> <strong id="statFound">0</strong> com resultados</div>
+    <div class="stat-pill"><span class="stat-dot dot-warn"></span> <strong id="statNone">0</strong> sem resultado</div>
+    <div class="stat-pill"><span class="stat-dot" style="background:#888"></span> <strong id="statError">0</strong> com erro</div>
+    <div class="stat-pill">🔍 Busca: "<strong id="statTerm">—</strong>"</div>
   </div>
 
-  <!-- PANEL: EMAIL TEMPLATES -->
-  <div class="panel" id="panel-email">
-    <div class="console-wrap">
-      <div class="console-topbar">
-        <div class="console-dots">
-          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
-        </div>
-        <div class="console-title">email-templates-html.txt</div>
-        <button class="copy-btn" id="btn-email" onclick="copyContent('content-email', 'btn-email')">⎘ Copiar tudo</button>
-      </div>
-      <div class="console-body">
-        <pre id="content-email"><span class="c-comment">// ═══════════════════════════════════════════════════════════════════
-// TEMPLATE A — EMAIL COM RESULTADOS ENCONTRADOS
-// Cole no campo Body do Office 365 Outlook (Is HTML = Yes)
-// ═══════════════════════════════════════════════════════════════════</span>
+  <!-- RESULTS -->
+  <div id="resultsArea"></div>
 
-<span class="c-key">To      :</span> <span class="c-string">nucleodeprojeto@hospitaldabaleia.org.br</span>
-<span class="c-key">Subject :</span> <span class="c-string">Monitoramento de Diários Oficiais – Fundação Benjamin Guimarães</span>
-<span class="c-key">Is HTML :</span> <span class="c-val">Yes</span>
-
-<span class="c-html">&lt;div style="font-family:Segoe UI,Arial,sans-serif;max-width:700px;margin:0 auto;border-radius:8px;overflow:hidden;border:1px solid #dce8f5"&gt;
-  &lt;div style="background:#003566;color:#fff;padding:20px 24px"&gt;
-    &lt;h2 style="margin:0;font-size:18px;font-weight:600"&gt;
-      📋 Monitoramento de Diários Oficiais
-    &lt;/h2&gt;
-    &lt;p style="margin:6px 0 0;font-size:13px;opacity:0.75"&gt;
-      Fundação Benjamin Guimarães · Hospital da Baleia
-    &lt;/p&gt;
-  &lt;/div&gt;
-  &lt;div style="padding:24px;background:#fff"&gt;
-    &lt;p style="color:#333;margin-bottom:16px"&gt;Prezados,&lt;/p&gt;
-    &lt;p style="color:#333"&gt;
-      O monitoramento automático identificou publicações nos Diários Oficiais
-      para os dias &lt;strong&gt;@{varDataOntem}&lt;/strong&gt; e
-      &lt;strong&gt;@{varDataHoje}&lt;/strong&gt;:
-    &lt;/p&gt;
-    &lt;hr style="border:none;border-top:2px solid #e8f0f8;margin:20px 0"&gt;
-    @{variables('varResultados')}
-    &lt;hr style="border:none;border-top:1px solid #e8f0f8;margin:20px 0"&gt;
-    &lt;p style="font-size:12px;color:#888;margin:0"&gt;
-      ⚙️ Mensagem gerada automaticamente pelo sistema de monitoramento.&lt;br&gt;
-      Fontes verificadas: DOU (in.gov.br) · Jornal Minas Gerais · DOM-BH
-    &lt;/p&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</span>
-
-<span class="c-comment">// ═══════════════════════════════════════════════════════════════════
-// TEMPLATE B — EMAIL SEM RESULTADOS
-// Cole no campo Body do Office 365 Outlook (Is HTML = Yes)
-// ═══════════════════════════════════════════════════════════════════</span>
-
-<span class="c-key">To      :</span> <span class="c-string">nucleodeprojeto@hospitaldabaleia.org.br</span>
-<span class="c-key">Subject :</span> <span class="c-string">Monitoramento de Diários Oficiais – Fundação Benjamin Guimarães</span>
-<span class="c-key">Is HTML :</span> <span class="c-val">Yes</span>
-
-<span class="c-html">&lt;div style="font-family:Segoe UI,Arial,sans-serif;max-width:700px;margin:0 auto;border-radius:8px;overflow:hidden;border:1px solid #dce8f5"&gt;
-  &lt;div style="background:#003566;color:#fff;padding:20px 24px"&gt;
-    &lt;h2 style="margin:0;font-size:18px;font-weight:600"&gt;
-      📋 Monitoramento de Diários Oficiais
-    &lt;/h2&gt;
-    &lt;p style="margin:6px 0 0;font-size:13px;opacity:0.75"&gt;
-      Fundação Benjamin Guimarães · Hospital da Baleia
-    &lt;/p&gt;
-  &lt;/div&gt;
-  &lt;div style="padding:24px;background:#fff"&gt;
-    &lt;p style="color:#333;margin-bottom:16px"&gt;Prezados,&lt;/p&gt;
-    &lt;p style="color:#333"&gt;
-      O monitoramento automático de &lt;strong&gt;@{varDataHoje}&lt;/strong&gt;
-      foi concluído e &lt;strong style="color:#c0392b"&gt;nenhuma publicação foi encontrada&lt;/strong&gt;
-      para os termos monitorados.
-    &lt;/p&gt;
-    &lt;div style="background:#f8f9fa;border-left:4px solid #003566;padding:14px 16px;margin:16px 0;border-radius:0 6px 6px 0"&gt;
-      &lt;p style="margin:0 0 8px;font-weight:600;color:#003566"&gt;Termos pesquisados:&lt;/p&gt;
-      &lt;ul style="margin:0;padding-left:20px;color:#333"&gt;
-        &lt;li&gt;Fundação Benjamin Guimarães&lt;/li&gt;
-        &lt;li&gt;Hospital da Baleia&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/div&gt;
-    &lt;div style="background:#f8f9fa;border-left:4px solid #28a745;padding:14px 16px;margin:16px 0;border-radius:0 6px 6px 0"&gt;
-      &lt;p style="margin:0 0 8px;font-weight:600;color:#28a745"&gt;Fontes verificadas:&lt;/p&gt;
-      &lt;ul style="margin:0;padding-left:20px;color:#333"&gt;
-        &lt;li&gt;Diário Oficial da União —
-          &lt;a href="https://www.in.gov.br" style="color:#003566"&gt;in.gov.br&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;Jornal Minas Gerais —
-          &lt;a href="https://www.jornalminasgerais.mg.gov.br" style="color:#003566"&gt;jornalminasgerais.mg.gov.br&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;Diário Oficial de BH —
-          &lt;a href="https://dom-web.pbh.gov.br" style="color:#003566"&gt;dom-web.pbh.gov.br&lt;/a&gt;&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/div&gt;
-    &lt;p style="font-size:12px;color:#888;margin:0"&gt;
-      ⚙️ Mensagem gerada automaticamente pelo sistema de monitoramento.
-    &lt;/p&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</span></pre>
-      </div>
-    </div>
-  </div>
-
-  <!-- Status bar -->
-  <div class="status-bar">
-    <div class="status-item">
-      <div class="status-dot ok"></div>
-      <span>6 endpoints configurados</span>
-    </div>
-    <div class="status-item">
-      <div class="status-dot ok"></div>
-      <span>2 termos de busca</span>
-    </div>
-    <div class="status-item">
-      <div class="status-dot warn"></div>
-      <span>Teste: hoje 16:30</span>
-    </div>
-    <div class="status-item">
-      <div class="status-dot ok"></div>
-      <span>Produção: diário 09:30</span>
-    </div>
-    <div class="status-item" style="margin-left:auto; color: #3d5470">
-      nucleodeprojeto@hospitaldabaleia.org.br
-    </div>
-  </div>
-
+  <footer>
+    <div class="footer-text">FilantroMonitor © 2025 — Monitoramento de publicações em portais oficiais</div>
+    <div class="footer-portals" id="footerPortals"></div>
+  </footer>
 </div>
 
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
 <script>
-  function switchTab(id) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + id).classList.add('active');
-    event.target.classList.add('active');
+// ═══════════════════════════════════════════════════════
+// PORTAL REGISTRY — todos os portais configurados
+// ═══════════════════════════════════════════════════════
+const PORTALS = [
+
+  // ── FEDERAL ──────────────────────────────────────────
+  {
+    id: 'dou', cat: 'federal', stripe: 'stripe-federal',
+    icon: '📜', name: 'Diário Oficial da União',
+    scope: 'Federal · Imprensa Nacional',
+    desc: 'Principal diário oficial do governo federal. Publica atos, portarias, contratos, convênios e extratos de entidades federais.',
+    searchUrl: q => `https://www.in.gov.br/consulta/-/busca-oficial?q=${encodeURIComponent('"'+q+'"')}&s=pub_dt&o=desc`,
+    homeUrl: 'https://www.in.gov.br',
+    proxyTry: true,
+    parseHints: ['resultados', 'publicação', 'diário'],
+  },
+  {
+    id: 'cnpq', cat: 'federal', stripe: 'stripe-federal',
+    icon: '🔬', name: 'CNPq – Bolsas e Projetos',
+    scope: 'Federal · Ciência e Tecnologia',
+    desc: 'Consulta de projetos, bolsas e convênios com entidades de pesquisa e filantropia.',
+    searchUrl: q => `http://plsql2.cnpq.br/divulg/RESULTADO_PQ_102003.prc_comp_download?v_param=&v_busca=${encodeURIComponent(q)}&v_ano=&v_modal=`,
+    homeUrl: 'https://www.cnpq.br',
+    proxyTry: false,
+  },
+  {
+    id: 'siconv', cat: 'federal', stripe: 'stripe-federal',
+    icon: '🤝', name: 'Transferegov / SICONV',
+    scope: 'Federal · Convênios e Transferências',
+    desc: 'Sistema federal de convênios, repasses e transferências voluntárias para entidades filantrópicas e do terceiro setor.',
+    searchUrl: q => `https://transferegov.sistema.gov.br/convenios/lista?uf=&municipio=&proponente=${encodeURIComponent(q)}&situacao=&modalidade=&ano=`,
+    homeUrl: 'https://transferegov.sistema.gov.br',
+    proxyTry: false,
+  },
+  {
+    id: 'cebas', cat: 'federal', stripe: 'stripe-federal',
+    icon: '🏛️', name: 'CEBAS – Certificação Filantrópica',
+    scope: 'Federal · Assistência Social / MDS',
+    desc: 'Certificado de Entidade Beneficente de Assistência Social. Consulta de entidades certificadas, renovações e processos.',
+    searchUrl: q => `https://aplicacoes.mds.gov.br/sagi/cebas/pesquisar.php?consulta=${encodeURIComponent(q)}`,
+    homeUrl: 'https://www.gov.br/mds/pt-br/acoes-e-programas/assistencia-social/cebas',
+    proxyTry: false,
+  },
+  {
+    id: 'cnes', cat: 'saude', stripe: 'stripe-cnes',
+    icon: '🏥', name: 'CNES – Cadastro Nacional de Saúde',
+    scope: 'Federal · Ministério da Saúde',
+    desc: 'Cadastro Nacional de Estabelecimentos de Saúde. Consulta de hospitais, clínicas e entidades de saúde filantrópicas.',
+    searchUrl: q => `https://cnes.datasus.gov.br/pages/estabelecimentos/consulta.jsp?search=${encodeURIComponent(q)}`,
+    homeUrl: 'https://cnes.datasus.gov.br',
+    proxyTry: false,
+  },
+  {
+    id: 'transparencia', cat: 'transp', stripe: 'stripe-transp',
+    icon: '📊', name: 'Portal da Transparência Federal',
+    scope: 'Federal · CGU',
+    desc: 'Gastos, contratos, convênios e repasses do governo federal. Inclui entidades do terceiro setor beneficiadas.',
+    searchUrl: q => `https://portaldatransparencia.gov.br/convenios?termo=${encodeURIComponent(q)}&ordenarPor=valor&direcao=desc`,
+    homeUrl: 'https://portaldatransparencia.gov.br',
+    proxyTry: false,
+  },
+  {
+    id: 'tcu', cat: 'tcu', stripe: 'stripe-tcu',
+    icon: '⚖️', name: 'TCU – Tribunal de Contas da União',
+    scope: 'Federal · Controle Externo',
+    desc: 'Acórdãos, decisões, processos de fiscalização e julgamentos que envolvam entidades filantrópicas e convênios federais.',
+    searchUrl: q => `https://pesquisa.apps.tcu.gov.br/#/pesquisa/acordao-completo?q=${encodeURIComponent(q)}&s=DTRELEVANCIA&sd=DESC`,
+    homeUrl: 'https://portal.tcu.gov.br',
+    proxyTry: false,
+  },
+
+  // ── MINAS GERAIS ─────────────────────────────────────
+  {
+    id: 'jmg', cat: 'mg', stripe: 'stripe-mg',
+    icon: '📰', name: 'Jornal Minas Gerais',
+    scope: 'Estado · Minas Gerais',
+    desc: 'Diário Oficial do Estado de Minas Gerais. Publicações estaduais, portarias da SEDS, contratos com entidades.',
+    searchUrl: q => `https://www.jornalminasgerais.mg.gov.br/?s=${encodeURIComponent(q)}`,
+    homeUrl: 'https://www.jornalminasgerais.mg.gov.br',
+    proxyTry: true,
+    parseHints: ['publicação', 'jornal', 'minas'],
+  },
+  {
+    id: 'dombh', cat: 'mg', stripe: 'stripe-mg',
+    icon: '🏙️', name: 'Diário Oficial BH',
+    scope: 'Município · Belo Horizonte',
+    desc: 'Diário Oficial do Município de Belo Horizonte. Atos municipais, convênios e publicações da PBH.',
+    searchUrl: q => `https://dom-web.pbh.gov.br/apex/f?p=2200:1:::NO:1:P1_PESQUISA:${encodeURIComponent(q)}`,
+    homeUrl: 'https://dom-web.pbh.gov.br',
+    proxyTry: true,
+    parseHints: ['diário', 'belo horizonte', 'publicação'],
+  },
+  {
+    id: 'tcemg', cat: 'tcu', stripe: 'stripe-tcmg',
+    icon: '🏛️', name: 'TCE-MG – Tribunal de Contas MG',
+    scope: 'Estado · Minas Gerais',
+    desc: 'Acórdãos, denúncias e processos de controle externo de entidades filantrópicas que recebem recursos do Estado de MG.',
+    searchUrl: q => `https://www2.tce.mg.gov.br/convenios-pesquisa?searchQuery=${encodeURIComponent(q)}`,
+    homeUrl: 'https://www.tce.mg.gov.br',
+    proxyTry: false,
+  },
+  {
+    id: 'tjmg', cat: 'tj', stripe: 'stripe-tj',
+    icon: '⚖️', name: 'TJMG – Tribunal de Justiça MG',
+    scope: 'Estado · Minas Gerais',
+    desc: 'Jurisprudência, acórdãos e decisões do TJMG envolvendo entidades filantrópicas, hospitais e fundações.',
+    searchUrl: q => `https://www5.tjmg.jus.br/jurisprudencia/pesquisaPalavrasEspelhoAcordao.do?&numeroProcesso=&listaProcesso=&palavras=${encodeURIComponent(q)}&exatidao=true&pesquisar=Pesquisar`,
+    homeUrl: 'https://www.tjmg.jus.br',
+    proxyTry: false,
+  },
+  {
+    id: 'transp-mg', cat: 'transp', stripe: 'stripe-mg',
+    icon: '📂', name: 'Transparência MG',
+    scope: 'Estado · Minas Gerais',
+    desc: 'Portal de Transparência do Governo do Estado de Minas Gerais. Repasses, contratos e convênios estaduais.',
+    searchUrl: q => `http://www.transparencia.mg.gov.br/convenios/conveniados?busca=${encodeURIComponent(q)}`,
+    homeUrl: 'http://www.transparencia.mg.gov.br',
+    proxyTry: false,
+  },
+
+  // ── SÃO PAULO ─────────────────────────────────────────
+  {
+    id: 'doesp', cat: 'sp', stripe: 'stripe-sp',
+    icon: '📋', name: 'DOE-SP – Diário Oficial SP',
+    scope: 'Estado · São Paulo',
+    desc: 'Diário Oficial do Estado de São Paulo. Publicações de entidades filantrópicas com atuação no estado.',
+    searchUrl: q => `https://www.imprensaoficial.com.br/DO/GatewayPage.aspx?link=/2013/executivo%20secao%20i/janeiro/5/pag_0001_GES4P3O45HDP4e4SD1OIHFKH4EU.pdf&q=${encodeURIComponent(q)}`,
+    homeUrl: 'https://www.imprensaoficial.com.br',
+    proxyTry: false,
+  },
+  {
+    id: 'tcesp', cat: 'tcu', stripe: 'stripe-sp',
+    icon: '🏛️', name: 'TCE-SP – Tribunal de Contas SP',
+    scope: 'Estado · São Paulo',
+    desc: 'Consulta de processos, convênios e decisões do Tribunal de Contas do Estado de São Paulo.',
+    searchUrl: q => `https://www.tce.sp.gov.br/audesp/detalhe.php?tipo=entidade&busca=${encodeURIComponent(q)}`,
+    homeUrl: 'https://www.tce.sp.gov.br',
+    proxyTry: false,
+  },
+  {
+    id: 'tjsp', cat: 'tj', stripe: 'stripe-sp',
+    icon: '⚖️', name: 'TJSP – Tribunal de Justiça SP',
+    scope: 'Estado · São Paulo',
+    desc: 'Jurisprudência e processos do TJSP. Busca por razão social de entidades filantrópicas.',
+    searchUrl: q => `https://esaj.tjsp.jus.br/cjsg/resultadoCompleta.do?dados.buscaInteiroTeor=${encodeURIComponent(q)}&dados.pesquisarComSinonimos=S`,
+    homeUrl: 'https://www.tjsp.jus.br',
+    proxyTry: false,
+  },
+
+  // ── RIO DE JANEIRO ────────────────────────────────────
+  {
+    id: 'doerj', cat: 'rj', stripe: 'stripe-rj',
+    icon: '📋', name: 'DOERJ – Diário Oficial RJ',
+    scope: 'Estado · Rio de Janeiro',
+    desc: 'Diário Oficial do Estado do Rio de Janeiro. Publicações de entidades beneficentes e convênios estaduais.',
+    searchUrl: q => `http://www.ioerj.com.br/portal/modules/conteudoonline/lerConteudo.php?edicao=&busca=${encodeURIComponent(q)}`,
+    homeUrl: 'http://www.ioerj.com.br',
+    proxyTry: false,
+  },
+  {
+    id: 'tjrj', cat: 'tj', stripe: 'stripe-rj',
+    icon: '⚖️', name: 'TJRJ – Tribunal de Justiça RJ',
+    scope: 'Estado · Rio de Janeiro',
+    desc: 'Consulta de jurisprudência e processos no TJRJ envolvendo entidades filantrópicas.',
+    searchUrl: q => `https://www4.tjrj.jus.br/EJURIS/InicioConsJuris.aspx?PageID=matriz&q=${encodeURIComponent(q)}`,
+    homeUrl: 'https://www.tjrj.jus.br',
+    proxyTry: false,
+  },
+
+  // ── RIO GRANDE DO SUL ─────────────────────────────────
+  {
+    id: 'doers', cat: 'rs', stripe: 'stripe-rs',
+    icon: '📋', name: 'DOE-RS – Diário Oficial RS',
+    scope: 'Estado · Rio Grande do Sul',
+    desc: 'Diário Oficial do Estado do Rio Grande do Sul. Publicações de entidades beneficentes gaúchas.',
+    searchUrl: q => `https://www.ioergs.rs.gov.br/api/pub/search?q=${encodeURIComponent(q)}&sort=datapublicacao%3Adesc`,
+    homeUrl: 'https://www.ioergs.rs.gov.br',
+    proxyTry: false,
+  },
+  {
+    id: 'tjrs', cat: 'tj', stripe: 'stripe-rs',
+    icon: '⚖️', name: 'TJRS – Tribunal de Justiça RS',
+    scope: 'Estado · Rio Grande do Sul',
+    desc: 'Jurisprudência e processos do TJRS. Busca por entidades do terceiro setor.',
+    searchUrl: q => `https://www.tjrs.jus.br/buscas/jurisprudencia/exibe_html.php?q=${encodeURIComponent(q)}&proxystylesheet=tjrs_index&client=tjrs_index&filter=0&getfields=*&aba=juris`,
+    homeUrl: 'https://www.tjrs.jus.br',
+    proxyTry: false,
+  },
+
+  // ── PARANÁ ───────────────────────────────────────────
+  {
+    id: 'doespr', cat: 'pr', stripe: 'stripe-pr',
+    icon: '📋', name: 'DOES-PR – Diário Oficial PR',
+    scope: 'Estado · Paraná',
+    desc: 'Diário Oficial do Estado do Paraná. Publicações de entidades filantrópicas paranaenses.',
+    searchUrl: q => `https://www.iopr.pr.gov.br/buscadiario/BuscaAvancada?NumDiarioOf=&DataPublicacaoInicio=&DataPublicacaoFim=&Texto=${encodeURIComponent(q)}`,
+    homeUrl: 'https://www.iopr.pr.gov.br',
+    proxyTry: false,
+  },
+  {
+    id: 'tjpr', cat: 'tj', stripe: 'stripe-pr',
+    icon: '⚖️', name: 'TJPR – Tribunal de Justiça PR',
+    scope: 'Estado · Paraná',
+    desc: 'Jurisprudência e processos do Tribunal de Justiça do Paraná.',
+    searchUrl: q => `https://portal.tjpr.jus.br/jurisprudencia/j/12000000000004838/Pesquisa-de-jurisprud%C3%AAncia#resultado_ancora?q=${encodeURIComponent(q)}`,
+    homeUrl: 'https://www.tjpr.jus.br',
+    proxyTry: false,
+  },
+
+];
+
+// ── Category labels
+const CAT_LABELS = {
+  federal: { label: '🏛️ Âmbito Federal', order: 1 },
+  mg:      { label: '🌿 Minas Gerais', order: 2 },
+  sp:      { label: '🏙️ São Paulo', order: 3 },
+  rj:      { label: '🌊 Rio de Janeiro', order: 4 },
+  rs:      { label: '⛰️ Rio Grande do Sul', order: 5 },
+  pr:      { label: '🌲 Paraná', order: 6 },
+  tcu:     { label: '⚖️ Tribunais de Contas', order: 7 },
+  tj:      { label: '🔨 Tribunais de Justiça', order: 8 },
+  saude:   { label: '🏥 Saúde e CNES', order: 9 },
+  transp:  { label: '📊 Portais de Transparência', order: 10 },
+};
+
+// ── State
+let activeFilters = new Set(['all','federal','mg','sp','rj','rs','pr','tcu','tj','saude','transp']);
+let lastQuery = '';
+let searchResults = {};
+
+// ── Init
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('portalCount').textContent = PORTALS.length + ' portais cadastrados';
+  document.getElementById('footerPortals').textContent = PORTALS.length + ' portais · DOU · JMG · DOM-BH · TCU · TCE · TJ e mais';
+  renderInitialCards();
+
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startSearch();
+  });
+});
+
+// ── Render initial (empty) cards
+function renderInitialCards() {
+  const area = document.getElementById('resultsArea');
+  area.innerHTML = buildEmptyState();
+}
+
+function buildEmptyState() {
+  return `<div class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">Pronto para monitorar</div>
+    <div class="empty-sub">Digite o nome de uma instituição, CNPJ ou termo acima e clique em<br><strong>Buscar em Todos os Portais</strong>.</div>
+  </div>`;
+}
+
+// ── Filter chips
+function toggleFilter(el) {
+  const cat = el.dataset.cat;
+  if (cat === 'all') {
+    const allActive = [...document.querySelectorAll('.filter-chip')].filter(c=>c.dataset.cat!=='all').every(c=>c.classList.contains('active'));
+    if (allActive) {
+      document.querySelectorAll('.filter-chip').forEach(c => { c.classList.remove('active'); activeFilters.clear(); });
+    } else {
+      document.querySelectorAll('.filter-chip').forEach(c => { c.classList.add('active'); });
+      activeFilters = new Set(['all','federal','mg','sp','rj','rs','pr','tcu','tj','saude','transp']);
+    }
+  } else {
+    el.classList.toggle('active');
+    if (activeFilters.has(cat)) activeFilters.delete(cat);
+    else activeFilters.add(cat);
+    const allActive = [...document.querySelectorAll('.filter-chip')].filter(c=>c.dataset.cat!=='all').every(c=>c.classList.contains('active'));
+    document.querySelector('[data-cat="all"]').classList.toggle('active', allActive);
+  }
+}
+
+// ── Main search
+async function startSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) { showToast('⚠️ Digite um termo para buscar.'); return; }
+
+  lastQuery = q;
+  searchResults = {};
+
+  const portalsToSearch = PORTALS.filter(p => activeFilters.has(p.cat) || activeFilters.has('all'));
+
+  document.getElementById('searchBtn').disabled = true;
+  document.getElementById('searchBtn').innerHTML = '<span>⏳</span> Buscando...';
+
+  // Show progress
+  showProgress(portalsToSearch, q);
+  document.getElementById('statsBar').style.display = 'flex';
+  document.getElementById('statTerm').textContent = q;
+
+  // Render skeleton cards
+  renderSkeletonCards(portalsToSearch);
+
+  let done = 0, found = 0, none = 0, err = 0;
+
+  // Run all in parallel with individual updates
+  const promises = portalsToSearch.map(async (portal) => {
+    updateProgressItem(portal.id, 'running');
+    try {
+      const result = await fetchPortal(portal, q);
+      searchResults[portal.id] = result;
+      updatePortalCard(portal, result, q);
+      updateProgressItem(portal.id, result.status === 'found' ? 'done' : result.status === 'error' ? 'fail' : 'done');
+    } catch(e) {
+      searchResults[portal.id] = { status: 'error', items: [] };
+      updatePortalCard(portal, { status: 'error', items: [] }, q);
+      updateProgressItem(portal.id, 'fail');
+    }
+    done++;
+    if (searchResults[portal.id]?.status === 'found') found++;
+    else if (searchResults[portal.id]?.status === 'error') err++;
+    else none++;
+    const pct = Math.round((done / portalsToSearch.length) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent = `${done} / ${portalsToSearch.length}`;
+    document.getElementById('statFound').textContent = found;
+    document.getElementById('statNone').textContent = none;
+    document.getElementById('statError').textContent = err;
+  });
+
+  await Promise.all(promises);
+
+  // Finalize
+  document.getElementById('progressWrap').classList.remove('visible');
+  document.getElementById('searchBtn').disabled = false;
+  document.getElementById('searchBtn').innerHTML = '<span>🔎</span> Buscar em Todos os Portais';
+  showToast(`✅ Busca concluída! ${found} portal(is) com resultados.`);
+}
+
+// ── Fetch a portal (tries proxy, falls back to link)
+async function fetchPortal(portal, q) {
+  const url = portal.searchUrl(q);
+
+  if (portal.proxyTry) {
+    // Try CORS proxy
+    const proxies = [
+      `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+      `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    ];
+    for (const proxy of proxies) {
+      try {
+        const res = await Promise.race([
+          fetch(proxy),
+          new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 8000))
+        ]);
+        if (res.ok) {
+          const data = await res.json();
+          const html = data.contents || data.body || '';
+          if (html && html.length > 200) {
+            const found = checkHtmlForResults(html, q, portal);
+            return {
+              status: found.length > 0 ? 'found' : 'none',
+              items: found,
+              url,
+              via: 'auto',
+            };
+          }
+        }
+      } catch(_) {}
+    }
   }
 
-  function copyContent(elementId, btnId) {
-    const el = document.getElementById(elementId);
-    const text = el.innerText;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById(btnId);
-      btn.textContent = '✓ Copiado!';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = '⎘ Copiar tudo';
-        btn.classList.remove('copied');
-      }, 2000);
+  // Fallback: just return link
+  return { status: 'link', items: [], url, via: 'link' };
+}
+
+// ── Parse HTML for results (best-effort)
+function checkHtmlForResults(html, q, portal) {
+  const results = [];
+  const lower = html.toLowerCase();
+  const qLower = q.toLowerCase();
+  const terms = qLower.split(/\s+/).filter(t => t.length > 3);
+
+  const hasMatch = terms.every(t => lower.includes(t));
+  if (!hasMatch) return [];
+
+  // Try to extract titles/links
+  const titleRe = /<(?:h[1-6]|a)[^>]*>([^<]{10,200})<\/(?:h[1-6]|a)>/gi;
+  const linkRe = /href=["']([^"']+)["'][^>]*>([^<]{5,150})<\/a>/gi;
+
+  let m;
+  const seen = new Set();
+  while ((m = linkRe.exec(html)) !== null && results.length < 5) {
+    const [, href, text] = m;
+    const cleanText = text.replace(/\s+/g, ' ').trim();
+    const cleanHref = href.startsWith('http') ? href : (new URL(href, portal.homeUrl)).href;
+    if (terms.some(t => cleanText.toLowerCase().includes(t)) && !seen.has(cleanHref) && cleanText.length > 10) {
+      seen.add(cleanHref);
+      results.push({
+        title: cleanText,
+        link: cleanHref,
+        date: extractDate(html, href) || 'Data não identificada',
+        organ: portal.name,
+      });
+    }
+  }
+
+  if (results.length === 0 && hasMatch) {
+    results.push({
+      title: `Possível menção a "${q}" encontrada`,
+      link: portal.searchUrl(q),
+      date: new Date().toLocaleDateString('pt-BR'),
+      organ: portal.name,
     });
   }
+
+  return results;
+}
+
+function extractDate(html, near) {
+  const re = /(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})/g;
+  const m = re.exec(html);
+  if (!m) return null;
+  return m[1];
+}
+
+// ── Render skeleton cards
+function renderSkeletonCards(portals) {
+  const area = document.getElementById('resultsArea');
+  area.innerHTML = '';
+
+  // Group by cat
+  const groups = {};
+  portals.forEach(p => { if (!groups[p.cat]) groups[p.cat] = []; groups[p.cat].push(p); });
+
+  const sorted = Object.keys(groups).sort((a,b) => (CAT_LABELS[a]?.order||99) - (CAT_LABELS[b]?.order||99));
+
+  sorted.forEach(cat => {
+    const group = document.createElement('div');
+    group.className = 'category-group';
+    group.id = 'group-' + cat;
+    group.innerHTML = `<div class="category-label">${CAT_LABELS[cat]?.label || cat}</div><div class="portals-grid" id="grid-${cat}"></div>`;
+    area.appendChild(group);
+
+    const grid = document.getElementById('grid-' + cat);
+    groups[cat].forEach(portal => {
+      const card = document.createElement('div');
+      card.className = 'portal-card';
+      card.id = 'card-' + portal.id;
+      card.innerHTML = `
+        <div class="card-stripe ${portal.stripe}"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-icon">${portal.icon}</div>
+            <div class="card-info">
+              <div class="card-name">${portal.name}</div>
+              <div class="card-scope">${portal.scope}</div>
+            </div>
+            <div class="card-status status-loading">⏳ Buscando</div>
+          </div>
+          <div class="skeleton sk-line medium"></div>
+          <div class="skeleton sk-line short" style="margin-top:6px"></div>
+        </div>`;
+      grid.appendChild(card);
+    });
+  });
+}
+
+// ── Update a single portal card after result
+function updatePortalCard(portal, result, q) {
+  const card = document.getElementById('card-' + portal.id);
+  if (!card) return;
+
+  const url = result.url || portal.searchUrl(q);
+
+  let statusHtml = '';
+  if (result.status === 'found') statusHtml = `<div class="card-status status-found">✅ ${result.items.length} resultado(s)</div>`;
+  else if (result.status === 'none')  statusHtml = `<div class="card-status status-none">❌ Sem resultado</div>`;
+  else if (result.status === 'error') statusHtml = `<div class="card-status status-error">⚠️ Erro</div>`;
+  else                                statusHtml = `<div class="card-status status-ready">🔗 Link direto</div>`;
+
+  let resultsHtml = '';
+  if (result.status === 'found' && result.items.length > 0) {
+    resultsHtml = '<div class="card-results">';
+    result.items.slice(0,4).forEach(item => {
+      resultsHtml += `
+        <div class="result-item">
+          <div class="result-title">${escHtml(item.title)}</div>
+          <div class="result-meta">
+            <span class="result-tag">📅 ${escHtml(item.date)}</span>
+            <span class="result-tag">📌 ${escHtml(item.organ)}</span>
+          </div>
+          <a class="result-link" href="${escHtml(item.link)}" target="_blank" rel="noopener">🔗 Acessar publicação →</a>
+        </div>`;
+    });
+    resultsHtml += '</div>';
+  } else if (result.status === 'none') {
+    resultsHtml = `<div class="card-desc" style="color:#888;font-style:italic;margin-bottom:10px">Nenhuma publicação encontrada para "<strong>${escHtml(q)}</strong>" neste portal.</div>`;
+  } else if (result.status === 'link' || result.status === 'error') {
+    resultsHtml = `<div class="card-desc" style="margin-bottom:10px">${escHtml(portal.desc)}</div>`;
+  }
+
+  const via = result.via === 'auto' ? '<span style="font-size:10px;color:var(--green);margin-left:6px">● busca automática</span>' : '<span style="font-size:10px;color:var(--gold);margin-left:6px">● link direto</span>';
+
+  card.innerHTML = `
+    <div class="card-stripe ${portal.stripe}"></div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-icon">${portal.icon}</div>
+        <div class="card-info">
+          <div class="card-name">${portal.name} ${via}</div>
+          <div class="card-scope">${portal.scope}</div>
+        </div>
+        ${statusHtml}
+      </div>
+      ${resultsHtml}
+      <div class="card-actions">
+        <a class="btn-search-portal" href="${escHtml(url)}" target="_blank" rel="noopener">
+          🔍 Abrir busca no portal
+        </a>
+        <a class="btn-open-site" href="${escHtml(portal.homeUrl)}" target="_blank" rel="noopener">
+          🌐 Site
+        </a>
+      </div>
+    </div>`;
+}
+
+// ── Progress
+function showProgress(portals, q) {
+  const wrap = document.getElementById('progressWrap');
+  wrap.classList.add('visible');
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('progressText').textContent = `0 / ${portals.length}`;
+  const list = document.getElementById('progressList');
+  list.innerHTML = portals.map(p => `<span class="progress-item" id="prog-${p.id}">${p.icon} ${p.name.split('–')[0].split('·')[0].trim()}</span>`).join('');
+}
+
+function updateProgressItem(id, state) {
+  const el = document.getElementById('prog-' + id);
+  if (el) { el.className = 'progress-item ' + state; }
+}
+
+// ── Toast
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Utils
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 </script>
 </body>
 </html>
